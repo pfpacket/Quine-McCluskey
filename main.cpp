@@ -6,11 +6,13 @@
 #include <iterator>
 #include <algorithm>
 #include <stdexcept>
+#include <cmath>
 #include <cstdlib>
 #include <boost/regex.hpp>
 #include <boost/format.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/dynamic_bitset.hpp>
 
 using namespace std;
 
@@ -21,10 +23,10 @@ namespace quine_mccluskey {
 enum expr_mode { alphabet_expr };
 
 /*
- * String to be parsed has to be in the following form
+ * String to be parsed has to be in the following form:
  * ${Function-Name}(Variables-divided-by-',' ...) = ${TERMS} + ...
  * White spaces will be ignored
- * Default character to invert a variable is '^'
+ * Default character to invert a variable is '^' (first template parameter)
  */
 template<char inverter = '^', bool escape = true, expr_mode mode = alphabet_expr>
 class function_parser {
@@ -49,8 +51,8 @@ public:
             throw std::runtime_error("expr: Expression is empty, aborted");
         string expr_with_nospaces = boost::regex_replace(expr_, boost::regex("\\s"), "");
         boost::regex reg(
-            (boost::format("(.+)\\((((\\s*[A-Z],)*)([A-Z]))\\)=(((%1%?[A-Z])+\\+)*((%1%?[A-Z])+))$") 
-                % ( escape ? string{'\\', inverter} : string{inverter})).str(),
+            (boost::format("([A-Za-z_-]+)\\((((\\s*[A-Z],)*)([A-Z]))\\)=(((%1%?[A-Z])+\\+)*((%1%?[A-Z])+))$") 
+                % (escape ? string{'\\', inverter} : string{inverter})).str(),
              boost::regex::perl
         );
         boost::smatch result;
@@ -89,34 +91,66 @@ private:
     string expr_;
 };
 
-/*
-
 template<char inverter = '^'>
-class boolean_function {
+class boolean_term {
 public:
-    boolean_function() {}
-    boolean_function(const string &expr, int bitsize) {
-        
+    typedef boost::optional<bool> value_type;    
+    typedef boost::dynamic_bitset<> arg_type;
+    boolean_term() {}
+    boolean_term(const string &expr, int bitsize) : term_(bitsize, dont_care) { parse(expr); }
+
+    int size() const { return term_.size(); }
+
+    bool calculate(const arg_type &arg) const {
+        if( arg.size() != term_.size() )
+            throw std::runtime_error("target two operands are not same size");
+        bool ret = true;
+        for( int i = 0; i < term_.size(); ++i ) {
+            ret = ret && (term_[i] ? arg[i] == term_[i] : true);
+        }
+        return ret;
+    }
+
+    value_type& operator[](int index) { return term_[index]; }
+    friend ostream& operator<<(ostream &os, const boolean_term &bf) {
+        for( auto b : bf.term_ ) {
+            if( b ) cout << *b;
+            else    cout << 'x';
+        }
+        return os;
     }
 private:
-    void parse(const string &expr, bitsize) {
+    void parse(const string &expr) {
         bool invert = false;
-        boost::dynamic_bitset<> 
-        for( char  ) {
+        for( char var : expr ) {
             if( var == inverter ) {
                 invert = true;
-                break;
+                continue;
             }
-
+            term_[var - 'A'] = !invert;
             invert = false;
         }
     }
-    
-    boost::dynamic_bitset<> term_;
+    static const boost::optional<bool> dont_care;
+    vector<value_type> term_;
 };
-*/
+
+template<>
+const boost::optional<bool> boolean_term<>::dont_care = boost::none;
+
+
 
 }   // namespace quine_mccluskey
+
+void print_truth_table(const quine_mccluskey::boolean_term<> &logterm) {
+    for( int i = 0; i < std::pow(2, logterm.size()); ++i ) {
+        quine_mccluskey::boolean_term<>::arg_type arg(logterm.size(), i);
+        cout << "f = " << logterm << " <- ";
+        for( int n = 0; n < arg.size(); ++n )
+            cout << arg[n];
+        cout << " = " << logterm.calculate(arg) << endl;
+    }
+}
 
 int main(int argc, char **argv)
 {
@@ -132,7 +166,12 @@ int main(int argc, char **argv)
         copy(token.first.begin(), token.first.end(), ostream_iterator<char>(cout, " "));
         cout << endl << "Using terms: ";
         copy(token.second.begin(), token.second.end(), ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << endl << "Number of variables = " << token.first.size() << endl;;
+        for( string term : token.second ) {
+            cout << term << ":" << endl;
+            quine_mccluskey::boolean_term<> logterm(term, token.first.size());
+            print_truth_table(logterm);
+        }
     }
     catch( std::exception &e ) {
         cerr << "[-] Exception: " << e.what() << endl;
