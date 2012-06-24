@@ -1,0 +1,71 @@
+Quine-McCluskey
+[*] Enter the formula to solve
+Input: f(A, B, C) = ABC + ^ABC + ^A^B^C + A + B + C
+result[0] = f(A,B,C)=ABC+^ABC+^A^B^C+A+B+C
+result[1] = f
+result[2] = A,B,C
+result[3] = A,B,
+result[4] = B,
+result[5] = C
+result[6] = ABC+^ABC+^A^B^C+A+B+C
+result[7] = B+
+result[8] = B
+result[9] = C
+result[10] = C
+Declared variables: A B C
+Using terms: ABC ^ABC ^A^B^C A B C
+Number of variables = 3
+ABC:
+f = 111 <- 000 = 0
+f = 111 <- 100 = 0
+f = 111 <- 010 = 0
+f = 111 <- 110 = 0
+f = 111 <- 001 = 0
+f = 111 <- 101 = 0
+f = 111 <- 011 = 0
+f = 111 <- 111 = 1
+^ABC:
+f = 011 <- 000 = 0
+f = 011 <- 100 = 0
+f = 011 <- 010 = 0
+f = 011 <- 110 = 0
+f = 011 <- 001 = 0
+f = 011 <- 101 = 0
+f = 011 <- 011 = 1
+f = 011 <- 111 = 0
+^A^B^C:
+f = 000 <- 000 = 1
+f = 000 <- 100 = 0
+f = 000 <- 010 = 0
+f = 000 <- 110 = 0
+f = 000 <- 001 = 0
+f = 000 <- 101 = 0
+f = 000 <- 011 = 0
+f = 000 <- 111 = 0
+A:
+f = 1xx <- 000 = 0
+f = 1xx <- 100 = 1
+f = 1xx <- 010 = 0
+f = 1xx <- 110 = 1
+f = 1xx <- 001 = 0
+f = 1xx <- 101 = 1
+f = 1xx <- 011 = 0
+f = 1xx <- 111 = 1
+B:
+f = x1x <- 000 = 0
+f = x1x <- 100 = 0
+f = x1x <- 010 = 1
+f = x1x <- 110 = 1
+f = x1x <- 001 = 0
+f = x1x <- 101 = 0
+f = x1x <- 011 = 1
+f = x1x <- 111 = 1
+C:
+f = xx1 <- 000 = 0
+f = xx1 <- 100 = 0
+f = xx1 <- 010 = 0
+f = xx1 <- 110 = 0
+f = xx1 <- 001 = 1
+f = xx1 <- 101 = 1
+f = xx1 <- 011 = 1
+f = xx1 <- 111 = 1
