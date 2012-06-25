@@ -7,6 +7,7 @@ TARGET	 = a.out
 OBJS	 = main.o
 
 all:	$(TARGET)
+rebuild: clean all
 
 $(TARGET): $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
