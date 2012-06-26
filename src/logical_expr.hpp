@@ -1,5 +1,5 @@
-#ifndef LOGICAL_EXPRESSION
-#define LOGICAL_EXPRESSION
+#ifndef LOGICAL_EXPRESSION_HPP
+#define LOGICAL_EXPRESSION_HPP
 
 
 #include <iostream>
@@ -16,7 +16,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/dynamic_bitset.hpp>
 
-
+//
+// namespace for Logical Expression
+//
 namespace logical_expr {
 
 
@@ -110,14 +112,37 @@ public:
     logical_term() : inverter_('^') {}
     logical_term(const string &expr, int bitsize, char inverter = '^') 
         : expr_(expr), inverter_(inverter), term_(bitsize, logical_expr::dont_care) { parse(expr_); }
+    explicit logical_term(const arg_type &arg) {
+        for( int i = arg.size() - 1; 0 <= i; --i )
+            term_.push_back(arg[i]);
+    }
 
     int size() const { return term_.size(); }
     const string& get_expr() { return expr_; }
+    const vector<value_type>& get_term() const { return term_; }
 
     bool size_check(const arg_type &arg) const { return (size() == arg.size()); }
     bool size_check(const this_type &term) const { return (size() == term.size()); }
     static bool size_check(const this_type &first, const this_type &second) { return (first.size() == second.size()); }
     static bool size_check(const arg_type &first, const arg_type &second) { return (first.size() == second.size()); }
+
+    int num_of_value(bool value) const {
+        int value_count = 0;
+        for( auto b : term_ )
+            if( b != dont_care && *b == value )
+                ++value_count;
+        return value_count;
+    }
+
+    int diff_size(const this_type &term) const {
+        if( !size_check(term) ) return -1;
+        int diff_count = 0;
+        for( int i = 0; i < size(); ++i ) {
+            if( term_[i] != term[i] )
+                ++diff_count;
+        }
+        return diff_count;
+    }
 
     bool calculate(const arg_type &arg) const {
         if( !size_check(arg) )
@@ -133,6 +158,8 @@ public:
     }
 
     value_type& operator[](int index) { return term_[index]; }
+    const value_type& operator[](int index) const { return term_[index]; }
+    
     bool operator==(const logical_term &term) {
         if( !size_check(term) ) return false;
         for( int i = 0; i < std::pow(2, size()); ++i ) {
@@ -141,14 +168,6 @@ public:
                 return false;
         }
         return true;
-    }
-
-    friend ostream& operator<<(ostream &os, const logical_term &bf) {
-        for( auto b : bf.term_ ) {
-            if( b ) os << *b;
-            else    os << 'x';
-        }
-        return os;
     }
 
 private:
@@ -169,6 +188,18 @@ private:
     vector<value_type> term_;
 };
 
+}
+
+std::ostream& operator<<(std::ostream &os, const logical_expr::logical_term &bf) {
+        for( auto b : bf.get_term() ) {
+            if( b ) os << *b;
+            else    os << 'x';
+        }
+        return os;
+}
+
+
+namespace logical_expr {
 
 class logical_function {
 public:
@@ -206,6 +237,7 @@ public:
 
     bool operator()(const arg_type &arg) const { return calculate(arg); }
     value_type& operator[](int index) { return func_[index]; }
+    const value_type&  operator[](int index) const { return func_[index]; }
 
     logical_function operator+(const logical_term &term) {
         
@@ -230,14 +262,16 @@ private:
     vector<logical_term> func_;
 };
 
-logical_function operator+(const logical_term &first, const logical_term &second) {
-    logical_function ret(first);
+
+}   // namespace logical_expr
+
+
+logical_expr::logical_function operator+(const logical_expr::logical_term &first, const logical_expr::logical_term &second) {
+    logical_expr::logical_function ret(first);
     ret += second;
     return ret;
 }
 
 
-}   // namespace logical_expr
-
-
-#endif  // LOGICAL_EXPRESSION
+ 
+#endif  // LOGICAL_EXPRESSION_HPP

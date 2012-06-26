@@ -4,7 +4,7 @@ LDFLAGS	 =
 INCLUDES = -I${BOOST_DIR}/include/
 LIBS	 = -L${BOOST_DIR}/lib -lboost_regex
 TARGET	 = a.out
-OBJS	 = main.o
+OBJS	 = src/main.o
 
 all:	$(TARGET)
 rebuild: clean all
@@ -16,4 +16,4 @@ clean:
 	-rm -f $(TARGET) $(OBJS) .nfs* *~ \#* core
 
 .cpp.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c $<
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@

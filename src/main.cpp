@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <set>
 #include <utility>
 #include <iterator>
 #include <algorithm>
@@ -9,6 +10,7 @@
 #include <cmath>
 #include <cstdlib>
 #include "logical_expr.hpp"
+#include "quine_mccluskey.hpp"
 
 using namespace std;
 
@@ -23,6 +25,7 @@ void print_truth_table(const logical_expr::logical_function &logfunc) {
     for( int i = 0; i < std::pow(2, logfunc.term_size()); ++i ) {
         logical_expr::logical_term::arg_type arg(logfunc.term_size(), i);
         cout << arg << " |  " << logfunc(arg) << endl;
+        logical_expr::logical_term tmp(arg);
     }
 }
 
@@ -36,15 +39,21 @@ int main(int argc, char **argv)
         string line;
         getline(cin, line);
         auto token = logical_expr::function_parser<'^', true>(line).parse();
-        cout << "Declared variables: ";
-        copy(token.first.begin(), token.first.end(), ostream_iterator<char>(cout, " "));
-        cout << endl << "Using terms: ";
-        copy(token.second.begin(), token.second.end(), ostream_iterator<string>(cout, " "));
-        cout << endl;
         logical_expr::logical_function function;
         for( string term : token.second )
             function += logical_expr::logical_term(term, token.first.size());
-        print_truth_table(function);
+        quine_mccluskey::minimizer qm(function);
+        logical_expr::logical_function stdspf = qm.get_std_spf();
+        print_truth_table(stdspf);
+        auto table = qm.make_min_table();
+        cout << endl;
+        int true_count = 0;
+        for( auto set : table ) {
+            cout << "true_count = " << true_count++ << endl;
+            for( const logical_expr::logical_term term : set )
+                cout << term << " ";
+            cout << endl;
+        }
     }
     catch( std::exception &e ) {
         cerr << "[-] Exception: " << e.what() << endl;
