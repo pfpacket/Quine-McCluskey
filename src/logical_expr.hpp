@@ -46,7 +46,7 @@ public:
     ~function_parser() {}
 
     void set_expression(const string &expr) { expr_ = expr; }
-    string set_expression() { return expr_; }
+    const string& get_expression() { return expr_; }
     const string& function_name() const { return func_name_; }
 
     result_type parse() {
@@ -227,6 +227,8 @@ public:
         for( auto term : func )
             add(term);
     }
+
+    void clear() { func_.clear(); }
     
     bool calculate(const arg_type &arg) const {
         bool ret = false;

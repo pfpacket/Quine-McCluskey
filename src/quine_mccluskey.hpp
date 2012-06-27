@@ -6,7 +6,7 @@
 #include <set>
 #include <algorithm>
 #include <stdexcept>
-#include "quine_mccluskey.hpp"
+#include "logical_expr.hpp"
 
 
 namespace quine_mccluskey {
@@ -25,26 +25,26 @@ public:
     ~minimizer() {}
 
     // Return standard sum of products form
-    logical_function get_std_spf() const { return get_std_spf(func_); }
-    static logical_function get_std_spf(const logical_function &func) {
-        logical_function ret;
+    const logical_function& get_std_spf() { return get_std_spf(func_); }
+    const logical_function& get_std_spf(const logical_function &func) {
+        stdspf_.clear();
         for( int i = 0; i < std::pow(2, func.term_size()); ++i ) {
             logical_term::arg_type arg(func.term_size(), i);
             if( func(arg) )
-                ret += logical_term(arg);
+                stdspf_ += logical_term(arg);
         }
-        return ret;
+        return stdspf_;
     }
 
     const table_type& make_min_table() {
         table_.resize(func_.term_size() + 1, vector<logical_term>());
-        for( auto term : func_ )
+        for( auto term : stdspf_ )
             table_[term.num_of_value(true)].push_back(term);
         return table_;
     }
 
 private:
-    logical_function func_;
+    logical_function func_, stdspf_;
     table_type table_;
 };
 

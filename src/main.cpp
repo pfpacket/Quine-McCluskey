@@ -25,7 +25,17 @@ void print_truth_table(const logical_expr::logical_function &logfunc) {
     for( int i = 0; i < std::pow(2, logfunc.term_size()); ++i ) {
         logical_expr::logical_term::arg_type arg(logfunc.term_size(), i);
         cout << arg << " |  " << logfunc(arg) << endl;
-        logical_expr::logical_term tmp(arg);
+    }
+}
+
+void print_bit_table(quine_mccluskey::minimizer::table_type &table)
+{
+    int true_count = 0;
+    for( auto set : table ) {
+        cout << "true_count = " << true_count++ << endl;
+        for( const logical_expr::logical_term term : set )
+            cout << term << " ";
+        cout << endl;
     }
 }
 
@@ -43,17 +53,11 @@ int main(int argc, char **argv)
         for( string term : token.second )
             function += logical_expr::logical_term(term, token.first.size());
         quine_mccluskey::minimizer qm(function);
-        logical_expr::logical_function stdspf = qm.get_std_spf();
+        auto stdspf = qm.get_std_spf();
         print_truth_table(stdspf);
-        auto table = qm.make_min_table();
         cout << endl;
-        int true_count = 0;
-        for( auto set : table ) {
-            cout << "true_count = " << true_count++ << endl;
-            for( const logical_expr::logical_term term : set )
-                cout << term << " ";
-            cout << endl;
-        }
+        auto table = qm.make_min_table();
+        print_bit_table(table);
     }
     catch( std::exception &e ) {
         cerr << "[-] Exception: " << e.what() << endl;
