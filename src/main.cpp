@@ -14,21 +14,20 @@
 
 using namespace std;
 
-void print_truth_table(const logical_expr::logical_function &logfunc) {
+void print_truth_table(const logical_expr::logical_function &f) {
     cout << endl << "Truth Table:" << endl;
-    for( char c = 'A'; c != 'A' + logfunc.term_size(); ++c )
+    for( char c = 'A'; c != 'A' + f.term_size(); ++c )
         cout << c;
     cout << " | f()"<< endl;
-    for( int i = 0; i < logfunc.term_size() + 6; ++i )
-        cout << ( (i == logfunc.term_size() + 1) ? '|' : '-');
+    for( int i = 0; i < f.term_size() + 6; ++i )
+        cout << ( (i == f.term_size() + 1) ? '|' : '-');
     cout << endl;
-    for( int i = 0; i < std::pow(2, logfunc.term_size()); ++i ) {
-        logical_expr::logical_term::arg_type arg(logfunc.term_size(), i);
-        cout << arg << " |  " << logfunc(arg) << endl;
-    }
+    logical_expr::arg_generator<> gen(0, std::pow(2, f.term_size()), f.term_size());
+    for( auto it = gen.begin(); it != gen.end(); ++it )
+        cout << *it << " |  " << f(*it) << endl;
 }
 
-void print_bit_table(quine_mccluskey::minimizer::table_type &table)
+void print_bit_table(const quine_mccluskey::minimizer::table_type &table)
 {
     int true_count = 0;
     for( auto set : table ) {
@@ -58,6 +57,8 @@ int main(int argc, char **argv)
         cout << endl;
         auto table = qm.make_min_table();
         print_bit_table(table);
+        cout << endl << "minimized: " << endl;
+        qm.minimize();
     }
     catch( std::exception &e ) {
         cerr << "[-] Exception: " << e.what() << endl;

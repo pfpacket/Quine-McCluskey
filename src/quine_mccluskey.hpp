@@ -17,8 +17,8 @@ using namespace logical_expr;
 
 class minimizer {
 public:
-
-    typedef vector<vector<logical_term>> table_type;
+    typedef vector<logical_term> set_type;
+    typedef vector<set_type> table_type;
 
     minimizer() {}
     explicit minimizer(const logical_function &function) : func_(function) {}
@@ -37,10 +37,23 @@ public:
     }
 
     const table_type& make_min_table() {
-        table_.resize(func_.term_size() + 1, vector<logical_term>());
+        table_.resize(func_.term_size() + 1, set_type());
         for( auto term : stdspf_ )
             table_[term.num_of_value(true)].push_back(term);
         return table_;
+    }
+
+    void minimize() {
+        for( int i = 0; i+1 < table_.size(); ++i ) {
+            for( int j = 0; j < table_[i].size(); ++j ) {
+                for( int k = 0; k < table_[i+1].size(); ++k ) {
+                    try {
+                        auto term = onebit_minimize(table_[i][j], table_[i+1][k]);
+                        cout << "MINIMIZE(" << table_[i][j] << ", " << table_[i+1][k] << ") = " << term << endl;
+                    } catch( std::exception &e ) {}
+                }
+            }
+        }
     }
 
 private:

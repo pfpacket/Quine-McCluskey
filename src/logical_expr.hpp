@@ -31,6 +31,44 @@ static const boost::optional<bool> dont_care = boost::none;
 // But this will be used to change the expression of functions
 enum expr_mode { alphabet_expr };
 
+
+class arg_gen_iterator {
+public:
+    typedef boost::dynamic_bitset<> value_type;
+    typedef arg_gen_iterator this_type;
+
+    arg_gen_iterator(int width, int val) : width_(width), current_val_(val) {}
+    this_type& operator++() { ++current_val_; return *this; }
+    this_type  operator++(int) { this_type it = *this; ++current_val_; return it; }
+    this_type& operator--() { --current_val_; return *this; }
+    this_type  operator--(int) { this_type it = *this; --current_val_; return it; }
+    bool operator<(const this_type &it) const
+        { return (it.width_ == width_ && current_val_ < it.current_val_); }
+    bool operator>(const this_type &it) const
+        { return (it.width_ == width_ && current_val_ > it.current_val_); }
+    bool operator==(const this_type &it) const 
+        { return (it.width_ == width_ && current_val_ == it.current_val_); }
+    bool operator!=(const this_type &it) const 
+        { return !(*this == it); }
+    value_type operator*() { return value_type(width_, current_val_); }
+private:
+    const int width_;
+    int current_val_;
+};
+
+// Argument generator for logical_function using Iterator (default: arg_gen_iterator)
+template<typename Iterator = arg_gen_iterator>
+class arg_generator {
+public:
+    arg_generator(int nbegin, int nend, int width) 
+        : begin_(nbegin), end_(nend), width_(width) {}
+    Iterator begin() const { return arg_gen_iterator(width_, begin_); }
+    Iterator  end()  const { return arg_gen_iterator(width_, end_); }
+private:
+    const int begin_, end_, width_;
+};
+
+
 /*
  * String to be parsed has to be in the following form:
  * ${Function-Name}(Variables-divided-by-',' ...) = ${TERMS} + ...
@@ -46,7 +84,7 @@ public:
     ~function_parser() {}
 
     void set_expression(const string &expr) { expr_ = expr; }
-    const string& get_expression() { return expr_; }
+    const string& get_expression() const { return expr_; }
     const string& function_name() const { return func_name_; }
 
     result_type parse() {
@@ -117,14 +155,12 @@ public:
             term_.push_back(arg[i]);
     }
 
-    int size() const { return term_.size(); }
+    unsigned int size() const { return term_.size(); }
     const string& get_expr() { return expr_; }
     const vector<value_type>& get_term() const { return term_; }
 
     bool size_check(const arg_type &arg) const { return (size() == arg.size()); }
     bool size_check(const this_type &term) const { return (size() == term.size()); }
-    static bool size_check(const this_type &first, const this_type &second) { return (first.size() == second.size()); }
-    static bool size_check(const arg_type &first, const arg_type &second) { return (first.size() == second.size()); }
 
     int num_of_value(bool value) const {
         int value_count = 0;
@@ -162,11 +198,10 @@ public:
     
     bool operator==(const logical_term &term) {
         if( !size_check(term) ) return false;
-        for( int i = 0; i < std::pow(2, size()); ++i ) {
-            logical_expr::logical_term::arg_type arg(size(), i);
-            if( calculate(arg) != term.calculate(arg) )
+        arg_generator<> gen(0, std::pow(2, size()), size());
+        for( auto it = gen.begin(); it != gen.end(); ++it )
+            if( calculate(*it) != term.calculate(*it) )
                 return false;
-        }
         return true;
     }
 
@@ -188,7 +223,19 @@ private:
     vector<value_type> term_;
 };
 
+logical_term onebit_minimize(const logical_term &a, const logical_term &b)
+{
+    if( a.size() != b.size() || 1 < a.diff_size(b) )
+        throw std::runtime_error("tried to minimize two different size terms");
+    logical_term term(a);
+    for( int i = 0; i < term.size(); ++i )
+        if( term[i] != b[i] )
+            term[i] = dont_care;
+    return std::move(term);
 }
+
+
+}   // namespace logical_expr
 
 std::ostream& operator<<(std::ostream &os, const logical_expr::logical_term &bf) {
         for( auto b : bf.get_term() ) {
@@ -240,9 +287,7 @@ public:
     bool operator()(const arg_type &arg) const { return calculate(arg); }
     value_type& operator[](int index) { return func_[index]; }
     const value_type&  operator[](int index) const { return func_[index]; }
-
     logical_function operator+(const logical_term &term) {
-        
         logical_function ret(*this);
         ret += term;
         return ret;
@@ -258,6 +303,13 @@ public:
         for( auto term : bf.func_ )
             os << term << " ";
         return os;
+    }
+    bool operator==(const logical_function &func) {
+        arg_generator<> gen(0, std::pow(2, func.term_size()), func.term_size());
+        for( auto it = gen.begin(); it != gen.end(); ++it )
+            if( calculate(*it) != func.calculate(*it) )
+                return false;
+        return true;
     }
 
 private:
