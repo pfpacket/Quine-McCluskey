@@ -1,3 +1,4 @@
+
 #ifndef LOGICAL_EXPRESSION_HPP
 #define LOGICAL_EXPRESSION_HPP
 
@@ -140,17 +141,52 @@ private:
 };
 
 
+//
+// Term properties
+//
+// Type Requirements:
+//  [*] Have set() and get() member functions
+//  [*] Default constructible
+//
+class term_no_property {
+public:
+    typedef int value_type;
+    value_type get() const { return 0; }
+    void set(value_type) const {}
+};
 
+class term_mark {
+public:
+    typedef bool value_type;
+    term_mark() : mark_(false) {}
+    value_type get() const { return mark_; }
+    void set(bool mark) { mark_ = mark; }
+private:
+    value_type mark_;
+};
 
+class term_number {
+public:
+    typedef unsigned int value_type;
+    term_number() : number_(0) {}
+    value_type get() const { return number_; }
+    void set(value_type number) { number_ = number; }
+private:
+    value_type number_;
+};
+//
+
+template<typename Property = term_no_property, char inverter = '^'>
 class logical_term {
 public:
     typedef boost::optional<bool> value_type;    
     typedef boost::dynamic_bitset<> arg_type;
     typedef logical_term this_type;
+    typedef Property property_type;
     
-    logical_term() : inverter_('^') {}
-    logical_term(const string &expr, int bitsize, char inverter = '^') 
-        : expr_(expr), inverter_(inverter), term_(bitsize, logical_expr::dont_care) { parse(expr_); }
+    logical_term() {}
+    logical_term(const string &expr, int bitsize) 
+        : expr_(expr), term_(bitsize, logical_expr::dont_care) { parse(expr_); }
     explicit logical_term(const arg_type &arg) {
         for( int i = arg.size() - 1; 0 <= i; --i )
             term_.push_back(arg[i]);
@@ -159,6 +195,8 @@ public:
     unsigned int size() const { return term_.size(); }
     const string& get_expr() const { return expr_; }
     const vector<value_type>& get_term() const { return term_; }
+    property_type& property() { return property_; }
+    const property_type& property() const { return property_; }
 
     bool size_check(const arg_type &arg) const { return (size() == arg.size()); }
     bool size_check(const this_type &term) const { return (size() == term.size()); }
@@ -210,7 +248,7 @@ private:
     void parse(const string &expr) {
         bool invert = false;
         for( char var : expr ) {
-            if( var == inverter_ ) {
+            if( var == inverter ) {
                 invert = true;
                 continue;
             }
@@ -220,15 +258,25 @@ private:
     }
     
     string expr_;
-    char inverter_;
     vector<value_type> term_;
+    property_type property_;
 };
 
-logical_term onebit_minimize(const logical_term &a, const logical_term &b)
+template<typename Property, char inverter>
+typename logical_term<Property, inverter>::property_type::value_type
+    property_get(const logical_term<Property, inverter>& term) { return term.property().get(); }
+
+template<typename Property, char inverter>
+void property_set(logical_term<Property, inverter>& term,
+    typename logical_term<Property, inverter>::property_type::value_type arg)
+{ return term.property().set(arg); }
+
+template<typename Prop, char Inv>
+logical_term<Prop, Inv> onebit_minimize(const logical_term<Prop, Inv> &a, const logical_term<Prop, Inv> &b)
 {
     if( a.size() != b.size() || 1 < a.diff_size(b) )
         throw std::runtime_error("tried to minimize two different size terms");
-    logical_term term(a);
+    logical_term<Prop, Inv> term(a);
     for( int i = 0; i < term.size(); ++i )
         if( term[i] != b[i] )
             term[i] = dont_care;
@@ -238,7 +286,8 @@ logical_term onebit_minimize(const logical_term &a, const logical_term &b)
 
 }   // namespace logical_expr
 
-std::ostream& operator<<(std::ostream &os, const logical_expr::logical_term &bf) {
+template<typename Prop, char Inv>
+std::ostream& operator<<(std::ostream &os, const logical_expr::logical_term<Prop, Inv> &bf) {
         for( auto b : bf.get_term() ) {
             if( b ) os << *b;
             else    os << 'x';
@@ -249,15 +298,18 @@ std::ostream& operator<<(std::ostream &os, const logical_expr::logical_term &bf)
 
 namespace logical_expr {
 
+
+template<typename TermType>
 class logical_function {
 public:
-    typedef logical_term value_type;
+    typedef TermType value_type;
     typedef boost::dynamic_bitset<> arg_type;
-    typedef vector<value_type>::iterator iterator;
-    typedef vector<value_type>::const_iterator const_iterator;
+    typedef typename vector<value_type>::iterator iterator;
+    typedef typename vector<value_type>::const_iterator const_iterator;
+    typedef typename logical_term<TermType> this_type;
 
     logical_function() {}
-    explicit logical_function(const logical_term &term) { add(term); }
+    explicit logical_function(const TermType &term) { add(term); }
     ~logical_function() {}
 
     iterator begin() { return func_.begin(); }
@@ -270,8 +322,8 @@ public:
         if( size() == 0 ) return 0;
         return func_[0].size();
     }
-    void add(const logical_term &term) { func_.push_back(term); }
-    void add(const logical_function &func) {
+    void add(const TermType &term) { func_.push_back(term); }
+    void add(const this_type &func) {
         for( auto term : func )
             add(term);
     }
@@ -288,7 +340,7 @@ public:
     bool operator()(const arg_type &arg) const { return calculate(arg); }
     value_type& operator[](int index) { return func_[index]; }
     const value_type&  operator[](int index) const { return func_[index]; }
-    logical_function operator+(const logical_term &term) {
+    logical_function operator+(const TermType &term) {
         logical_function ret(*this);
         ret += term;
         return ret;
@@ -298,14 +350,14 @@ public:
         ret += func;
         return ret;
     }
-    logical_function& operator+=(const logical_term &term) { add(term); return *this; }
+    logical_function& operator+=(const TermType &term) { add(term); return *this; }
     logical_function& operator+=(const logical_function &func) { add(func); return *this; }
     friend ostream& operator<<(ostream &os, const logical_function &bf) {
         for( auto term : bf.func_ )
             os << term << " ";
         return os;
     }
-    bool operator==(const logical_function &func) const {
+    bool operator==(const logical_function<logical_term<>> &func) const {
         arg_generator<> gen(0, std::pow(2, func.term_size()), func.term_size());
         for( auto it = gen.begin(); it != gen.end(); ++it )
             if( calculate(*it) != func.calculate(*it) )
@@ -314,15 +366,17 @@ public:
     }
 
 private:
-    vector<logical_term> func_;
+    vector<TermType> func_;
 };
 
 
 }   // namespace logical_expr
 
 
-logical_expr::logical_function operator+(const logical_expr::logical_term &first, const logical_expr::logical_term &second) {
-    logical_expr::logical_function ret(first);
+template<typename Prop, char Inv>
+logical_expr::logical_function<logical_expr::logical_term<Prop, Inv>> operator+
+    (const logical_expr::logical_term<Prop, Inv> &first, const logical_expr::logical_term<Prop, Inv> &second) {
+    logical_expr::logical_function<logical_expr::logical_term<Prop, Inv>> ret(first);
     ret += second;
     return ret;
 }

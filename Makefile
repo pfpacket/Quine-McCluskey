@@ -1,4 +1,3 @@
-CC	 = clang++
 CFLAGS	 = -Wall -g -std=c++0x 
 LDFLAGS	 =
 INCLUDES = -I${BOOST_DIR}/include/
