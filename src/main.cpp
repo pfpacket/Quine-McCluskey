@@ -33,7 +33,7 @@ void print_bit_table(const quine_mccluskey::minimizer::table_type &table)
     int true_count = 0;
     for( auto set : table ) {
         cout << "true_count = " << true_count++ << endl;
-        for( const logical_expr::logical_term term : set )
+        for( auto term : set )
             cout << term << " ";
         cout << endl;
     }
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
         typedef logical_expr::logical_term<logical_expr::term_mark> TermType;
         logical_expr::logical_function<TermType> function;
         for( string term : token.second )
-            function += TermType(term, token.first.size());
+            function += logical_expr::parse_logical_term<logical_expr::term_mark>(term, token.first.size());
         quine_mccluskey::minimizer qm(function);
         auto stdspf = qm.get_std_spf();
         print_truth_table(stdspf);

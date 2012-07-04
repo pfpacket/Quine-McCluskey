@@ -6,7 +6,7 @@
 #include <set>
 #include <algorithm>
 #include <stdexcept>
-#include "logical_expr.hpp"
+#include "logical_expr_fixed.hpp"
 
 
 namespace quine_mccluskey {
@@ -14,16 +14,15 @@ namespace quine_mccluskey {
 using namespace std;
 using namespace logical_expr;
 
-template<char inverter = '^'>
 class minimizer {
 public:
-    typedef logical_term<term_mark, inverter> term_type;
+    typedef logical_term<term_mark> term_type;
     typedef vector<term_type> set_type;
     typedef vector<set_type> table_type;
 
     minimizer() : min_level_(0) 
         { add_table(table_type()); make_min_table(); }
-    minimizer(const logical_function &function) : min_level_(0), func_(function)
+    minimizer(const logical_function<term_type> &function) : min_level_(0), func_(function)
         { add_table(table_type()); make_min_table(); }
     ~minimizer() {}
 
@@ -34,13 +33,13 @@ public:
     }
 
     // Return standard sum of products form
-    const logical_function& get_std_spf() { return get_std_spf(func_); }
-    const logical_function& get_std_spf(const logical_function &func) {
+    const logical_function<term_type>& get_std_spf() { return get_std_spf(func_); }
+    const logical_function<term_type>& get_std_spf(const logical_function<term_type> &func) {
         stdspf_.clear();
         for( int i = 0; i < std::pow(2, func.term_size()); ++i ) {
-            logical_term::arg_type arg(func.term_size(), i);
+            logical_term<term_mark>::arg_type arg(func.term_size(), i);
             if( func(arg) )
-                stdspf_ += logical_term(arg);
+                stdspf_ += logical_term<term_mark>(arg);
         }
         return stdspf_;
     }
@@ -90,7 +89,7 @@ public:
 private:
     void add_table(const table_type& table) { table_.push_back(table); }
     int min_level_;
-    logical_function func_, stdspf_, minimized;
+    logical_function<term_type> func_, stdspf_, minimized;
     vector<table_type> table_;
 };
 
