@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <cmath>
 #include <cstdlib>
-#include "logical_expr_fixed.hpp"
+#include "logical_expr.hpp"
 #include "quine_mccluskey.hpp"
 
 using namespace std;

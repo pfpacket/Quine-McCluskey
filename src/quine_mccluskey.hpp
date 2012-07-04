@@ -6,7 +6,7 @@
 #include <set>
 #include <algorithm>
 #include <stdexcept>
-#include "logical_expr_fixed.hpp"
+#include "logical_expr.hpp"
 
 
 namespace quine_mccluskey {
