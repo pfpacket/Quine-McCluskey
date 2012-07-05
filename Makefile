@@ -12,7 +12,7 @@ $(TARGET): $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
 clean:
-	-rm -f $(TARGET) $(OBJS) .nfs* *~ \#* core
+	-rm -f $(TARGET) $(OBJS) *~ \#*
 
 .cpp.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
