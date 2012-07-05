@@ -59,7 +59,7 @@ int main(int argc, char **argv)
         cout << endl;
         qm.make_min_table();
         qm.get_prime_implicants();
-        cout << endl << "Prime implications: " << endl;
+        cout << endl << "Prime implicants: " << endl;
         qm.print_prime_implicants();
     }
     catch( std::exception &e ) {
