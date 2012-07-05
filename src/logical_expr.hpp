@@ -145,6 +145,7 @@ private:
 // Term properties
 //
 // Type Requirements:
+//  [*] typedef value type
 //  [*] Have set() and get() member functions
 //  [*] Default constructible
 //
@@ -228,7 +229,7 @@ public:
             throw std::runtime_error("target two operands are not same size");
         bool ret = true;
         for( int i = 0; i < term_.size(); ++i )
-            ret = ret && (term_[i] == dont_care ? true : arg[term_.size() - 1 -  i] == term_[i]);
+            ret = ret && (term_[i] == dont_care ? true : arg[term_.size()-1-i] == term_[i]);
         return ret;
     }
 
@@ -279,8 +280,8 @@ typename logical_term<Property>::property_type::value_type
 
 template<typename Property>
 void property_set(logical_term<Property>& term,
-    typename logical_term<Property>::property_type::value_type arg)
-{ return term.property().set(arg); }
+    const typename logical_term<Property>::property_type::value_type &arg)
+{ term.property().set(arg); }
 
 template<typename Property>
 logical_term<Property> onebit_minimize(const logical_term<Property> &a, const logical_term<Property> &b)
@@ -291,6 +292,15 @@ logical_term<Property> onebit_minimize(const logical_term<Property> &a, const lo
     for( int i = 0; i < term.size(); ++i )
         if( term[i] != b[i] )
             term[i] = dont_care;
+    return std::move(term);
+}
+
+template<typename Property>
+logical_term<Property> onebit_minimize(const logical_term<Property> &a, 
+        const logical_term<Property> &b, const typename logical_term<Property>::property_type::value_type &pval)
+{
+    logical_term<Property> term = onebit_minimize(a, b);
+    property_set(term, pval);
     return std::move(term);
 }
 

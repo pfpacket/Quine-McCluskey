@@ -1,1 +1,0 @@
-f(A,B,C,D,E,F) = ^A^B^C^D^E^F + ^A^B^C^DE^F + ^A^B^CDE^F + ^A^B^CDE^F + ^A^B^CDEF + ^A^BCDE^F + ^A^BC^D^E^F + A^BC^D^EF + ^A^BCD^E^F + ^A^BCDEF + ^A^BC^DE^F

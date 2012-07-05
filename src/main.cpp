@@ -57,12 +57,10 @@ int main(int argc, char **argv)
         auto stdspf = qm.get_std_spf();
         print_truth_table(stdspf);
         cout << endl;
-        auto table = qm.make_min_table();
-        print_bit_table(table);
-        cout << endl << "minimized: " << endl;
-        do {
-            cout << "Current level = " << qm.get_current_level() << endl;
-        } while( qm.find_prime_implicants() );
+        qm.make_min_table();
+        qm.get_prime_implicants();
+        cout << endl << "Prime implications: " << endl;
+        qm.print_prime_implicants();
     }
     catch( std::exception &e ) {
         cerr << "[-] Exception: " << e.what() << endl;
