@@ -1,7 +1,7 @@
 Quine-McCluskey
-[*] Enter the formula to solve
+[*] Enter a logical expression
 Input: 
-Truth Table:
+Truth Table: 0000 + 0010 + 0011 + 0100 + 0101 + 0111 + 1101 + 1111 + 
 ABCD | f()
 -----|----
 0000 |  1
@@ -21,17 +21,20 @@ ABCD | f()
 1110 |  0
 1111 |  1
 
-MINIMIZE(0000, 0010) = 00x0
-MINIMIZE(0000, 0100) = 0x00
-MINIMIZE(0010, 0011) = 001x
-MINIMIZE(0100, 0101) = 010x
-MINIMIZE(0011, 0111) = 0x11
-MINIMIZE(0101, 0111) = 01x1
-MINIMIZE(0101, 1101) = x101
-MINIMIZE(0111, 1111) = x111
-MINIMIZE(1101, 1111) = 11x1
-MINIMIZE(01x1, 11x1) = x1x1
-MINIMIZE(x101, x111) = x1x1
+1-level compression:
+COMPRESS(0000, 0010) = 00x0
+COMPRESS(0000, 0100) = 0x00
+COMPRESS(0010, 0011) = 001x
+COMPRESS(0100, 0101) = 010x
+COMPRESS(0011, 0111) = 0x11
+COMPRESS(0101, 0111) = 01x1
+COMPRESS(0101, 1101) = x101
+COMPRESS(0111, 1111) = x111
+COMPRESS(1101, 1111) = 11x1
+2-level compression:
+COMPRESS(01x1, 11x1) = x1x1
+COMPRESS(x101, x111) = x1x1
+3-level compression:
 
-Prime implications: 
+Prime implicants: 
 00x0 0x00 001x 010x 0x11 x1x1 

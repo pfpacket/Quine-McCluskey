@@ -61,11 +61,11 @@ template<typename Iterator = arg_gen_iterator>
 class arg_generator {
 public:
     arg_generator(int nbegin, int nend, int width) 
-        : begin_(nbegin), end_(nend), width_(width) {}
-    Iterator begin() const { return Iterator(width_, begin_); }
-    Iterator  end()  const { return Iterator(width_, end_); }
+        : begin_(width, nbegin), end_(width, nend) {}
+    const Iterator& begin() const { return begin_; }
+    const Iterator&  end()  const { return end_; }
 private:
-    const int begin_, end_, width_;
+    const Iterator begin_, end_;
 };
 
 
@@ -149,7 +149,7 @@ private:
 //  [*] Have set() and get() member functions
 //  [*] Default constructible
 //
-class term_no_property {
+class term_no_property {  // Dummy property. Do nothing.
 public:
     typedef int value_type;
     value_type get() const { return 0; }
@@ -337,8 +337,6 @@ public:
     const_iterator begin() const { return func_.begin(); }
     iterator end() { return func_.end(); }
     const_iterator end() const { return func_.end(); }
-
-//    const vector<T>
 
     int size() const { return func_.size(); }
     int term_size() const {
