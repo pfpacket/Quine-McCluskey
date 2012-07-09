@@ -48,13 +48,14 @@ int main(int argc, char **argv)
         string line;
         getline(cin, line);
         // Parse input logical expression and return tokenized
-        auto token = logical_expr::function_parser<'^', true>(line).parse();
+        constexpr char inverter = '^';
+        auto token = logical_expr::function_parser<inverter, true>(line).parse();
 
         // Create a logical function using logical_term<term_make>
         typedef logical_expr::logical_term<logical_expr::term_mark> TermType;
         logical_expr::logical_function<TermType> function;
         for( string term : token.second )
-            function += logical_expr::parse_logical_term<logical_expr::term_mark>(term, token.first.size());
+            function += logical_expr::parse_logical_term<logical_expr::term_mark, inverter>(term, token.first.size());
 
         // Create a simplifier using Quine-McCluskey algorithm
         quine_mccluskey::simplifier qm(function);

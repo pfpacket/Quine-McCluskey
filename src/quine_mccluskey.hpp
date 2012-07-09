@@ -8,7 +8,12 @@
 #include <stdexcept>
 #include "logical_expr.hpp"
 
-
+//
+// TODO
+// * create quine_mccluskey.cpp and 
+//      disunite the interface and implementation parts
+//
+//
 namespace quine_mccluskey {
 
 using namespace std;
@@ -20,11 +25,11 @@ using namespace logical_expr;
 // How to simplify:
 //  [*] In the case which simplifier is constructed with logical_function
 //      In this case, constructor will prepare to simplify a function
-//      1. compress_table()
-//      2. call simplify() to get simplified function
-//  [*] In the case which simplifier is constructed with no arguments
+//      1. compress_table()     // Compress the compression table
+//      2. simplify()           // simplify the function and get simplified
+//  [*] In the case which simplifier is default-constructed
 //      1. set_function()       // set a target function
-//      2. get_std_spf()        // make a standard sum of products form
+//      2. make_std_spf()       // make a standard sum of products form
 //      3. make_min_table()     // create a compression table
 //      4. same as the case above
 //
@@ -77,7 +82,9 @@ public:
 
     const set_type& get_prime_implicants() const { return prime_imp; }
 
-//    logical_function<logical_term<term_mark>> simplify() {}
+    logical_function<term_type> simplify() {
+
+    }
 
     void print_prime_implicants() const {
         for( auto term : prime_imp ) cout << term << " ";
@@ -97,7 +104,6 @@ private:
         for( int i = 0; i < table_.size(); ++i )
             table_[i].clear();
     }
-
 
     template<typename T>
     static void make_unique(vector<T> &vec) {

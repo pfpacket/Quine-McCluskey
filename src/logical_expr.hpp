@@ -14,6 +14,7 @@
 #include <boost/regex.hpp>
 #include <boost/format.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/call_traits.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/dynamic_bitset.hpp>
 
@@ -37,11 +38,16 @@ class arg_gen_iterator {
 public:
     typedef boost::dynamic_bitset<> value_type;
     typedef arg_gen_iterator this_type;
-    arg_gen_iterator(int width, int val) : width_(width), current_val_(val) {}
-    this_type& operator++() { ++current_val_; return *this; }
-    this_type  operator++(int) { this_type it = *this; ++current_val_; return it; }
-    this_type& operator--() { --current_val_; return *this; }
-    this_type  operator--(int) { this_type it = *this; --current_val_; return it; }
+    arg_gen_iterator(int width, int val) 
+        : width_(width), current_val_(val), value_(width, val) {}
+    this_type& operator++() 
+        { value_ = value_type(width_, ++current_val_); return *this; }
+    this_type  operator++(int) 
+        { this_type it = *this; value_ = value_type(width_, ++current_val_); return it; }
+    this_type& operator--() 
+        { value_ = value_type(width_, --current_val_); return *this; }
+    this_type  operator--(int) 
+        { this_type it = *this; value_ = value_type(width_, --current_val_); return it; }
     bool operator<(const this_type &it) const
         { return (it.width_ == width_ && current_val_ < it.current_val_); }
     bool operator>(const this_type &it) const
@@ -50,10 +56,11 @@ public:
         { return (it.width_ == width_ && current_val_ == it.current_val_); }
     bool operator!=(const this_type &it) const 
         { return !(*this == it); }
-    value_type operator*() const { return value_type(width_, current_val_); }
+    const value_type& operator*() const { return value_; }
 private:
     const int width_;
     int current_val_;
+    value_type value_;
 };
 
 // Argument generator for logical_function using Iterator (default: arg_gen_iterator)
@@ -125,14 +132,12 @@ public:
     }
 
     static bool use_undeclared_vars(const vector<string> &terms, const string &vars) {
-        for( auto term : terms ) {
-          for( auto used_var : term ) {
+        for( auto term : terms )
+          for( auto used_var : term )
             if( used_var != inverter && vars.find(used_var, 0) == string::npos )
               throw std::runtime_error(
                 (boost::format("expr: Using undeclared variable, %c") % used_var).str()
-                );
-          }
-        }
+              );
         return true;
     }
 
@@ -149,35 +154,27 @@ private:
 //  [*] Have set() and get() member functions
 //  [*] Default constructible
 //
-class term_no_property {  // Dummy property. Do nothing.
+
+// Term Property template class for POD types
+template<typename T, T DefaultValue>
+class term_property_pod {
 public:
-    typedef int value_type;
-    value_type get() const { return 0; }
-    void set(value_type) const {}
+    typedef T value_type;
+    term_property_pod() : value_(DefaultValue) {}
+    typename boost::call_traits<T>::param_type get() const { return value_; }
+    void set(typename boost::call_traits<T>::param_type value) { value_ = value; }
+private:
+    value_type value_;
 };
 
-class term_mark {
-public:
-    typedef bool value_type;
-    term_mark() : mark_(false) {}
-    value_type get() const { return mark_; }
-    void set(bool mark) { mark_ = mark; }
-private:
-    value_type mark_;
-};
-
-class term_number {
-public:
-    typedef unsigned int value_type;
-    term_number() : number_(0) {}
-    value_type get() const { return number_; }
-    void set(value_type number) { number_ = number; }
-private:
-    value_type number_;
-};
+typedef term_property_pod<int, 0> term_no_property;
+typedef term_no_property term_dummy;
+typedef term_property_pod<char, ' '> term_name;
+typedef term_property_pod<bool, false> term_mark;
+typedef term_property_pod<unsigned int, 0> term_number;
 //
 
-template<typename Property_ = term_no_property>
+template<typename Property_ = term_dummy>
 class logical_term {
 public:
     typedef boost::optional<bool> value_type;    
@@ -217,10 +214,9 @@ public:
     int diff_size(const this_type &term) const {
         if( !size_check(term) ) return -1;
         int diff_count = 0;
-        for( int i = 0; i < size(); ++i ) {
+        for( int i = 0; i < size(); ++i )
             if( term_[i] != term[i] )
                 ++diff_count;
-        }
         return diff_count;
     }
 

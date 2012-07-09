@@ -1,6 +1,32 @@
 #
-# README
 #
-Implementation of Quine-McCluskey algorithm
-Minimization of logical function
+#   README
+#
+
+[*] Summary
+ An implementation of Quine-McCluskey algorithm
+ Simplification of logical expressions
+
+[+] Requirements
+    [+] Compile Time
+        [*] Make
+        [*] C++11 compiler (Search about C++11 if you don't know about it)
+            (ex. GCC, clang, ICC,
+             and you have to realize VC++ is NOT a C++ compiler. it actually supports C++03, not C++11
+            )
+        [*] Boost C++ Libraries
+            Almost all the libraries I use are header-only.
+            But you need to build only boost_regex
+            Go to www.boost.org and get the source code to build it
+    [+] Run time
+        [*] Nothing is needed. Just run it
+
+[+] Tested environment
+    [+] Compiler
+        [*] gcc 4.6.3
+        [*] clang version 3.2 (trunk 159072)
+    [+] Operating System
+        [*] Linux 3.2.0-26-generic-pae i686 i686 i386 GNU/Linux
+    [+] Libraries
+        [*] Boost C++ Libraries 1.50.0
 
