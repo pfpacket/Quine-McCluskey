@@ -10,12 +10,33 @@
 
 using namespace std;
 
+template<typename Property>
+void print_term_expr(const logical_expr::logical_term<Property> &term)
+{
+    for( int i = 0; i < term.size(); ++i ) {
+        if( term[i] == false )  cout << "^";
+        if( term[i] != logical_expr::dont_care )
+            cout << static_cast<char>('A' + i);
+    }
+}
+
 template<typename TermType>
-void print_truth_table(const logical_expr::logical_function<TermType> &f) {
-    cout << endl << "Truth Table: ";
-    for( auto term : f )
-        cout << term << " + ";
-    cout << "\b\b\b" << endl;
+void print_func_expr(const logical_expr::logical_function<TermType> &func)
+{
+    cout << "f = ";
+    for( auto it = func.begin(); it != func.end(); ++it ) {
+        print_term_expr(*it);
+        if( it + 1 != func.end() )
+            cout << " + ";
+    }
+    cout << endl;
+}
+
+template<typename TermType>
+void print_truth_table(const logical_expr::logical_function<TermType> &f)
+{
+    cout << "Truth Table: ";
+    print_func_expr(f);
     for( char c = 'A'; c != 'A' + f.term_size(); ++c )
         cout << c;
     cout << " | f()"<< endl;
@@ -27,24 +48,14 @@ void print_truth_table(const logical_expr::logical_function<TermType> &f) {
         cout << *it << " |  " << f(*it) << endl;
 }
 
-void print_bit_table(const quine_mccluskey::simplifier::table_type &table)
-{
-    int true_count = 0;
-    for( auto set : table ) {
-        cout << "true_count = " << true_count++ << endl;
-        for( auto term : set )
-            cout << term << " ";
-        cout << endl;
-    }
-}
-
 int main(int argc, char **argv)
 {
     int exit_code = EXIT_SUCCESS;
     try {
-        cout << "Quine-McCluskey" << endl
-             << "[*] Enter a logical expression" << endl
-             << "Input: " << flush;
+        cout << "Logical Function Simplifier (Quine-McCluskey)"   << endl
+             << "[*] Enter a logical expression to be simplified" << endl
+             << "    (ex. \"f(A, B, C) = A + BC + ^A^B + ABC\" )" << endl
+             << "[*] Input: " << flush;
         string line;
         getline(cin, line);
         // Parse input logical expression and return tokenized
@@ -59,12 +70,19 @@ int main(int argc, char **argv)
 
         // Create a simplifier using Quine-McCluskey algorithm
         quine_mccluskey::simplifier qm(function);
-        print_truth_table(qm.get_std_spf());  // Print sum of products form
-        cout << endl;
-        qm.compress_table();
+        cout << endl << "Sum of products form:" << endl;
+        print_truth_table(qm.get_std_spf());    // Print sum of products form
+        cout << endl << "Compressing ..." << endl;
+        qm.compress_table();                    // Compress the compression table
         cout << endl << "Prime implicants: " << endl;
-        qm.print_prime_implicants();
-        //print_truth_table(qm.simplify());
+        for( auto term : qm.get_prime_implicants() ) {
+            print_term_expr(term);
+            cout << "  ";
+        }   
+        cout << endl << endl << "Result of simplifying:" << endl;
+        auto simplified = qm.simplify();        // Simplify!
+        for( auto func : simplified )
+            print_func_expr(func);
     }
     catch( std::exception &e ) {
         cerr << endl << "[-] Exception: " << e.what() << endl;

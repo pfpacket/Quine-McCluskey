@@ -47,9 +47,10 @@ public:
 
     void set_function(const logical_function<term_type> &func) { func_ = func; }
     int get_current_level() const { return min_level_; }
-
-    // Return standard sum of products form
     const logical_function<term_type>& get_std_spf() const { return stdspf_; }
+    const set_type& get_prime_implicants() const { return prime_imp; }
+
+    // Make standard sum of products form
     const logical_function<term_type>& make_std_spf() {
         stdspf_.clear();
         for( int i = 0; i < std::pow(2, func_.term_size()); ++i ) {
@@ -80,17 +81,23 @@ public:
         make_unique(prime_imp);
     }
 
-    const set_type& get_prime_implicants() const { return prime_imp; }
-
-    logical_function<term_type> simplify() {
-
+    const vector<logical_function<term_type>>& simplify() {
+        vector<int> next_index;
+        for( int i = 0; i < prime_imp.size(); ++i )
+            next_index.push_back(i);
+        for( int i = 1; i <= prime_imp.size(); ++i ) {
+            do {
+                logical_function<term_type> func;
+                for( int j = 0; j < i; ++j )
+                    func += prime_imp[next_index[j]];
+                if( func == stdspf_ 
+                    && std::find(simplified_.begin(), simplified_.end(), func) == simplified_.end() )
+                    simplified_.push_back(func);
+            } while( next_permutation(next_index.begin(), next_index.end()) );
+        }
+        return simplified_;
     }
 
-    void print_prime_implicants() const {
-        for( auto term : prime_imp ) cout << term << " ";
-        cout << endl;
-    }
-    
     void print_all_table() const {
         for( auto table : table_ )
             for( auto set : table )
@@ -144,7 +151,8 @@ private:
     }
 
     int min_level_;
-    logical_function<term_type> func_, stdspf_, minimized;
+    logical_function<term_type> func_, stdspf_;
+    vector<logical_function<term_type>> simplified_;
     vector<table_type> table_;
     set_type prime_imp;
 };

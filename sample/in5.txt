@@ -1,0 +1,1 @@
+f(A, B, C, D, E) = ^A^B^CD^E + ^A^BCDE + ABC^D^E + ^ABCD^E + AB^C^DE + A^B^CDE + A^BCDE + ^AB^CD^E + AB^C^D^E + ^A^BCD^E + ^A^B^CDE + ABC^DE

@@ -1,0 +1,73 @@
+Logical Function Simplifier (Quine-McCluskey)
+[*] Enter a logical expression to be simplified
+    (ex. "f(A, B, C) = A + BC + ^A^B + ABC" )
+[*] Input: 
+Sum of products form:
+Truth Table: f = ^A^B^CD^E + ^A^B^CDE + ^A^BCD^E + ^A^BCDE + ^AB^CD^E + ^ABCD^E + A^B^CDE + A^BCDE + AB^C^D^E + AB^C^DE + ABC^D^E + ABC^DE
+ABCDE | f()
+------|----
+00000 |  0
+00001 |  0
+00010 |  1
+00011 |  1
+00100 |  0
+00101 |  0
+00110 |  1
+00111 |  1
+01000 |  0
+01001 |  0
+01010 |  1
+01011 |  0
+01100 |  0
+01101 |  0
+01110 |  1
+01111 |  0
+10000 |  0
+10001 |  0
+10010 |  0
+10011 |  1
+10100 |  0
+10101 |  0
+10110 |  0
+10111 |  1
+11000 |  1
+11001 |  1
+11010 |  0
+11011 |  0
+11100 |  1
+11101 |  1
+11110 |  0
+11111 |  0
+
+Compressing ...
+1-level compression:
+COMPRESS(00010, 00011) = 0001x
+COMPRESS(00010, 00110) = 00x10
+COMPRESS(00010, 01010) = 0x010
+COMPRESS(00011, 00111) = 00x11
+COMPRESS(00011, 10011) = x0011
+COMPRESS(00110, 00111) = 0011x
+COMPRESS(00110, 01110) = 0x110
+COMPRESS(01010, 01110) = 01x10
+COMPRESS(11000, 11001) = 1100x
+COMPRESS(11000, 11100) = 11x00
+COMPRESS(00111, 10111) = x0111
+COMPRESS(10011, 10111) = 10x11
+COMPRESS(11001, 11101) = 11x01
+COMPRESS(11100, 11101) = 1110x
+2-level compression:
+COMPRESS(0001x, 0011x) = 00x1x
+COMPRESS(00x10, 00x11) = 00x1x
+COMPRESS(00x10, 01x10) = 0xx10
+COMPRESS(0x010, 0x110) = 0xx10
+COMPRESS(00x11, 10x11) = x0x11
+COMPRESS(x0011, x0111) = x0x11
+COMPRESS(1100x, 1110x) = 11x0x
+COMPRESS(11x00, 11x01) = 11x0x
+3-level compression:
+
+Prime implicants: 
+^A^BD  ^AD^E  ^BDE  AB^D  
+
+Result of simplifying:
+f = ^AD^E + ^BDE + AB^D

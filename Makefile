@@ -1,9 +1,9 @@
-CFLAGS	 = -Wall -g -std=c++0x 
-LDFLAGS	 =
-INCLUDES = -I${BOOST_DIR}/include/
-LIBS	 = -L${BOOST_DIR}/lib -lboost_regex
-TARGET	 = a.out
-OBJS	 = src/main.o
+CFLAGS    = -Wall -O2 -std=c++0x 
+LDFLAGS   =
+INCLUDES  = -I${BOOST_DIR}/include/
+LIBS      = -L${BOOST_DIR}/lib -lboost_regex
+TARGET    = qm
+OBJS      = src/main.o
 
 all:	$(TARGET)
 rebuild: clean all
