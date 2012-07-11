@@ -43,9 +43,9 @@ void print_truth_table(const logical_expr::logical_function<TermType> &f)
     for( int i = 0; i < f.term_size() + 6; ++i )
         cout << ((i == f.term_size() + 1) ? '|' : '-');
     cout << endl;
-    logical_expr::arg_generator<> gen(0, std::pow(2, f.term_size()), f.term_size());
-    for( auto it = gen.begin(); it != gen.end(); ++it )
-        cout << *it << " |  " << f(*it) << endl;
+    logical_expr::arg_generator<> generator(0, std::pow(2, f.term_size()), f.term_size());
+    for( auto arg : generator )
+        cout << arg << " |  " << f(arg) << endl;
 }
 
 int main(int argc, char **argv)
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
         // Create a simplifier using Quine-McCluskey algorithm
         quine_mccluskey::simplifier qm(function);
         cout << endl << "Sum of products form:" << endl;
-        print_truth_table(qm.get_std_spf());    // Print sum of products form
+        print_truth_table(qm.get_std_spf());    // Print the function in sum of products form
         cout << endl << "Compressing ..." << endl;
         qm.compress_table();                    // Compress the compression table
         cout << endl << "Prime implicants: " << endl;
@@ -80,8 +80,7 @@ int main(int argc, char **argv)
             cout << "  ";
         }   
         cout << endl << endl << "Result of simplifying:" << endl;
-        auto simplified = qm.simplify();        // Simplify!
-        for( auto func : simplified )
+        for( auto func : qm.simplify() )        // Simplify and print its results
             print_func_expr(func);
     }
     catch( std::exception &e ) {

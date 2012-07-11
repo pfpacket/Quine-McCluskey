@@ -1,0 +1,50 @@
+Logical Function Simplifier (Quine-McCluskey)
+[*] Enter a logical expression to be simplified
+    (ex. "f(A, B, C) = A + BC + ^A^B + ABC" )
+[*] Input: 
+Sum of products form:
+Truth Table: f = ^A^B^CD + ^A^BC^D + ^AB^CD + ^ABC^D + ^ABCD + A^B^C^D + A^B^CD + AB^C^D + AB^CD
+ABCD | f()
+-----|----
+0000 |  0
+0001 |  1
+0010 |  1
+0011 |  0
+0100 |  0
+0101 |  1
+0110 |  1
+0111 |  1
+1000 |  1
+1001 |  1
+1010 |  0
+1011 |  0
+1100 |  1
+1101 |  1
+1110 |  0
+1111 |  0
+
+Compressing ...
+1-level compression:
+COMPRESS(0001, 0101) = 0x01
+COMPRESS(0001, 1001) = x001
+COMPRESS(0010, 0110) = 0x10
+COMPRESS(1000, 1001) = 100x
+COMPRESS(1000, 1100) = 1x00
+COMPRESS(0101, 0111) = 01x1
+COMPRESS(0101, 1101) = x101
+COMPRESS(0110, 0111) = 011x
+COMPRESS(1001, 1101) = 1x01
+COMPRESS(1100, 1101) = 110x
+2-level compression:
+COMPRESS(0x01, 1x01) = xx01
+COMPRESS(x001, x101) = xx01
+COMPRESS(100x, 110x) = 1x0x
+COMPRESS(1x00, 1x01) = 1x0x
+3-level compression:
+
+Prime implicants: 
+^AC^D  ^ABD  ^ABC  ^CD  A^C  
+
+Result of simplifying:
+f = ^AC^D + ^ABD + ^CD + A^C
+f = ^AC^D + ^ABC + ^CD + A^C

@@ -63,3 +63,4 @@ Prime implicants:
 
 Result of simplifying:
 f = ^AD + B^D + A^B
+f = ^BD + ^AB + A^D

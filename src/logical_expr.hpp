@@ -76,12 +76,13 @@ private:
 };
 
 
-/*
- * String to be parsed has to be in the following form:
- * ${Function-Name}(Variables-divided-by-',' ...) = ${TERMS} + ...
- * White spaces will be ignored
- * Default character to invert a variable is '^' (first template parameter)
- */
+//
+// * String to be parsed has to be in the following form:
+// * ${Function-Name}(Variables-divided-by-',' ...) = ${TERMS} + ...
+// * White spaces will be ignored
+// * Default character to invert a variable is '^' (first template parameter)
+// See README for more information about parsing
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 template<char inverter = '^', bool escape = true, expr_mode mode = alphabet_expr>
 class function_parser {
 public:
@@ -114,8 +115,6 @@ public:
         if( !boost::regex_match(expr_with_nospaces, result, reg) )
             throw std::runtime_error("expr: Input string does not match the correct form");
         func_name_ = result[1];
-//        for( unsigned int i = 0; i < result.size(); ++i )
-//            cout << "result[" << i << "] = " << result[i] << endl;
 //                            decl-vars  decl-terms
         return vector<string>{result[2], result[6]};
     }
@@ -195,8 +194,6 @@ public:
     unsigned int size() const { return term_.size(); }
     const vector<value_type>& get_term() const { return term_; }
     vector<value_type>& set_term() const { return term_; }
-    property_type& property() { return property_; }
-    const property_type& property() const { return property_; }
 
     bool size_check(const arg_type &arg) const { return (size() == arg.size()); }
 
@@ -229,6 +226,8 @@ public:
         return ret;
     }
 
+    bool is_same(const this_type &term) const { return (term.term_ == term_); }
+
     bool operator()(const arg_type &arg) const {
         return calculate(arg);
     }
@@ -245,6 +244,15 @@ public:
                 return false;
         return true;
     }
+
+    template<typename Property>
+    friend typename logical_term<Property>::property_type::value_type
+        property_get(const logical_term<Property>& term);
+
+    template<typename Property>
+    friend void property_set(logical_term<Property>& term,
+        const typename logical_term<Property>::property_type::value_type &arg);
+
 
 private:
     vector<value_type> term_;
@@ -272,12 +280,12 @@ logical_term<Property> parse_logical_term(const string &expr, int bitsize) {
 template<typename Property>
 typename logical_term<Property>::property_type::value_type
     property_get(const logical_term<Property>& term) 
-{ return term.property().get(); }
+{ return term.property_.get(); }
 
 template<typename Property>
 void property_set(logical_term<Property>& term,
     const typename logical_term<Property>::property_type::value_type &arg)
-{ term.property().set(arg); }
+{ term.property_.set(arg); }
 
 template<typename Property>
 logical_term<Property> onebit_minimize(const logical_term<Property> &a, const logical_term<Property> &b)
@@ -323,6 +331,7 @@ public:
     typedef boost::dynamic_bitset<> arg_type;
     typedef typename vector<value_type>::iterator iterator;
     typedef typename vector<value_type>::const_iterator const_iterator;
+    typedef int id_type;
     typedef logical_function<TermType> this_type;
 
     logical_function() {}
@@ -352,6 +361,16 @@ public:
         for( auto term : func_ )
             ret = ret || term(arg);
         return ret;
+    }
+
+    bool is_same(const this_type &func) const {
+        for( int i = 0; i < size(); ++i ) {
+            bool find_same = false;
+            for( int j = 0; j < size(); ++j )
+                find_same |= (*this)[i].is_same(func[j]);
+            if( !find_same ) return false;
+        }
+        return true;
     }
 
     bool operator()(const arg_type &arg) const { return calculate(arg); }

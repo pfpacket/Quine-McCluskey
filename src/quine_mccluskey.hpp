@@ -83,16 +83,22 @@ public:
 
     const vector<logical_function<term_type>>& simplify() {
         vector<int> next_index;
+        std::pair<bool, int> end_flags = { false, 0 };
         for( int i = 0; i < prime_imp.size(); ++i )
             next_index.push_back(i);
         for( int i = 1; i <= prime_imp.size(); ++i ) {
+            if( end_flags.first && end_flags.second < i )
+                break;
             do {
                 logical_function<term_type> func;
                 for( int j = 0; j < i; ++j )
                     func += prime_imp[next_index[j]];
                 if( func == stdspf_ 
-                    && std::find(simplified_.begin(), simplified_.end(), func) == simplified_.end() )
+                    && std::find_if(simplified_.begin(), simplified_.end(), 
+                        [&](const logical_function<term_type> &f){ return f.is_same(func); }) == simplified_.end() ) {
                     simplified_.push_back(func);
+                    end_flags = { true, i };
+                }
             } while( next_permutation(next_index.begin(), next_index.end()) );
         }
         return simplified_;

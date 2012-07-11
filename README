@@ -31,14 +31,14 @@
         [*] Boost C++ Libraries 1.49.0 / 1.50.0
 
 [+] Supported form(s) of expression
-    [*] White spaces is ignored
+    [*] White spaces are ignored
     [+] You should enter a expression following the forms below:
-        [*] BNF (Backus–Naur Form)
+        [*] BNF (Backus-Naur Form)
       -------------------------------------------------------------------------------------------
         <supported>  ::= <func-name> (<var-decl>) = <expression>
-        <func-name>  ::= [A-Za-z]+
+        <func-name>  ::= [A-Za-z_-]+
         <var-decl>   ::= ([A-Z],)+ [A-Z]
         <expression> ::= <expression> + <expression> | <expression> + <term> | <term> + <term>
-        <term>       ::= [A-Z]+
+        <term>       ::= (\^?[A-Z])+
       -------------------------------------------------------------------------------------------
 
