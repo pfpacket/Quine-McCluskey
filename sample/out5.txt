@@ -1,9 +1,9 @@
 Logical Function Simplifier (Quine-McCluskey)
 [*] Enter a logical expression to be simplified
-    (ex. "f(A, B, C) = A + BC + ^A^B + ABC" )
+    (ex. "f(A, B, C) = A + BC + ~A~B + ABC" )
 [*] Input: 
 Sum of products form:
-Truth Table: f = ^A^B^CD^E + ^A^B^CDE + ^A^BCD^E + ^A^BCDE + ^AB^CD^E + ^ABCD^E + A^B^CDE + A^BCDE + AB^C^D^E + AB^C^DE + ABC^D^E + ABC^DE
+Truth Table: f = ~A~B~CD~E + ~A~B~CDE + ~A~BCD~E + ~A~BCDE + ~AB~CD~E + ~ABCD~E + A~B~CDE + A~BCDE + AB~C~D~E + AB~C~DE + ABC~D~E + ABC~DE
 ABCDE | f()
 ------|----
 00000 |  0
@@ -67,7 +67,7 @@ COMPRESS(11x00, 11x01) = 11x0x
 3-level compression:
 
 Prime implicants: 
-^A^BD  ^AD^E  ^BDE  AB^D  
+~A~BD  ~AD~E  ~BDE  AB~D  
 
 Result of simplifying:
-f = ^AD^E + ^BDE + AB^D
+f = ~AD~E + ~BDE + AB~D

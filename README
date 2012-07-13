@@ -26,7 +26,7 @@
         [*] gcc 4.6.3
         [*] clang version 3.2 (trunk 159072)
     [+] Operating System
-        [*] Linux 3.2.0-26-generic-pae i686 i686 i386 GNU/Linux
+        [*] Linux 3.2.0-26-generic-pae i686 GNU/Linux
     [+] Libraries
         [*] Boost C++ Libraries 1.49.0 / 1.50.0
 

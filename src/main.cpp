@@ -14,7 +14,7 @@ template<typename Property>
 void print_term_expr(const logical_expr::logical_term<Property> &term)
 {
     for( int i = 0; i < term.size(); ++i ) {
-        if( term[i] == false )  cout << "^";
+        if( term[i] == false )  cout << "~";
         if( term[i] != logical_expr::dont_care )
             cout << static_cast<char>('A' + i);
     }
@@ -54,12 +54,12 @@ int main(int argc, char **argv)
     try {
         cout << "Logical Function Simplifier (Quine-McCluskey)"   << endl
              << "[*] Enter a logical expression to be simplified" << endl
-             << "    (ex. \"f(A, B, C) = A + BC + ^A^B + ABC\" )" << endl
+             << "    (ex. \"f(A, B, C) = A + BC + ~A~B + ABC\" )" << endl
              << "[*] Input: " << flush;
         string line;
         getline(cin, line);
         // Parse input logical expression and return tokenized
-        constexpr char inverter = '^';
+        constexpr char inverter = '~';
         auto token = logical_expr::function_parser<inverter, true>(line).parse();
 
         // Create a logical function using logical_term<term_make>

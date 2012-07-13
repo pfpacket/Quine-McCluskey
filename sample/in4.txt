@@ -1,2 +1,2 @@
-f(A, B, C, D, E) = ^A^B^C^D^E + ^A^BC^D^E + ^A^B^CDE + ^A^BCDE + A^BC^D^E + A^BCDE + ^ABC^DE + ^A^B^CD^E + ^A^BCD^E + A^BCD^E
+f(A, B, C, D, E) = ~A~B~C~D~E + ~A~BC~D~E + ~A~B~CDE + ~A~BCDE + A~BC~D~E + A~BCDE + ~ABC~DE + ~A~B~CD~E + ~A~BCD~E + A~BCD~E
 

@@ -6,6 +6,7 @@
 #include <set>
 #include <algorithm>
 #include <stdexcept>
+#include <cmath>
 #include "logical_expr.hpp"
 
 //
@@ -53,11 +54,10 @@ public:
     // Make standard sum of products form
     const logical_function<term_type>& make_std_spf() {
         stdspf_.clear();
-        for( int i = 0; i < std::pow(2, func_.term_size()); ++i ) {
-            logical_term<term_mark>::arg_type arg(func_.term_size(), i);
+        arg_generator<> generator(0, std::pow(2, func_.term_size()), func_.term_size());
+        for( auto arg : generator )
             if( func_(arg) )
                 stdspf_ += logical_term<term_mark>(arg);
-        }
         return stdspf_;
     }
 
@@ -103,13 +103,6 @@ public:
         }
         return simplified_;
     }
-
-    void print_all_table() const {
-        for( auto table : table_ )
-            for( auto set : table )
-                for( auto term : set ) 
-                    cout << term << endl;
-    }
     
 private:
     void add_table(const table_type& table) { table_.push_back(table); }
@@ -140,7 +133,9 @@ private:
                         // Throw an exception if could not minimize
                         auto term = onebit_minimize(table_[min_level_][i][j], table_[min_level_][i+1][k], false);
                         cout << "COMPRESS(" << table_[min_level_][i][j] << ", " << table_[min_level_][i+1][k] << ") = " << term << endl;
-                        next_table[term.num_of_value(true)].push_back(term);
+                        if( std::find_if(next_table[term.num_of_value(true)].begin(), next_table[term.num_of_value(true)].end(), 
+                                    [&](const term_type &t){ return t.is_same(term); }) == next_table[term.num_of_value(true)].end())
+                            next_table[term.num_of_value(true)].push_back(term);
                         ++count;
                         // Mark the used term for minimization
                         property_set(table_[min_level_][i][j], true);
