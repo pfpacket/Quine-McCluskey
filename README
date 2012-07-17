@@ -10,10 +10,7 @@
 [+] Requirements
     [+] Compile Time
         [*] Make
-        [*] C++11 compiler (Search about C++11 if you don't know about it)
-            (ex. GCC, clang, ICC,
-             and you have to realize VC++ is NOT a C++ compiler. it actually supports C++03, not C++11
-            )
+        [*] C++11 compiler
         [*] Boost C++ Libraries
             Almost all the libraries I use are header-only.
             But you need to build only boost_regex
@@ -41,4 +38,12 @@
         <expression> ::= <expression> + <expression> | <expression> + <term> | <term> + <term>
         <term>       ::= (\^?[A-Z])+
       -------------------------------------------------------------------------------------------
+
+[*] Samples
+    Input samples exist in sample/in[1-6].txt
+    Also output of each samples are in sample/out[1-6].txt
+
+[*] TODO
+    Modify the simplifier for more optimization
+    Support Verilog source code
 
