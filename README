@@ -4,15 +4,15 @@
 #
 
 [*] Summary
- An implementation of Quine-McCluskey algorithm
- Simplification of logical expressions
+    An implementation of Quine-McCluskey algorithm
+    Simplification of logical expressions
 
 [+] Requirements
     [+] Compile Time
         [*] Make
         [*] C++11 compiler
         [*] Boost C++ Libraries
-            Almost all the libraries I use are header-only.
+            Almost all the libraries used by this are header-only.
             But you need to build only boost_regex
             Go to www.boost.org and get the source code to build it
     [+] Run time
@@ -30,7 +30,7 @@
 [+] Supported form(s) of expression
     [*] White spaces are ignored
     [+] You should enter a expression following the forms below:
-        [*] BNF (Backus-Naur Form)
+        [*] Pseudo BNF
       -------------------------------------------------------------------------------------------
         <supported>  ::= <func-name> (<var-decl>) = <expression>
         <func-name>  ::= [A-Za-z_-]+
