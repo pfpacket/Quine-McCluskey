@@ -88,7 +88,7 @@ class function_parser {
 public:
     typedef std::pair<string, vector<string>> result_type;
     function_parser() {}
-    explicit function_parser(const string &expr) : expr_(expr) {}
+    explicit function_parser(const string &expr, const char first) : expr_(expr), first_char_(first) {}
     ~function_parser() {}
 
     void set_expression(const string &expr) { expr_ = expr; }
@@ -98,7 +98,13 @@ public:
     result_type parse() {
         auto untokenized = scanner();
         auto token = tokenizer(untokenized);
-        use_undeclared_vars(token.second, token.first);
+        boost::optional<char> undecl = use_undeclared_vars(token.second, token.first);
+        if( undecl )
+            throw std::runtime_error(
+                (boost::format("expr: Using undeclared variable, %c") % *undecl).str()
+            );
+        if( !is_sequence(token.first, first_char_) )   
+            throw std::runtime_error("expr: used variables are not sequence");
         return std::move(token);
     }
 
@@ -129,19 +135,31 @@ public:
         for( auto token : term_tokenizer )  terms.push_back(token);
         return std::make_pair(oss.str(), terms);
     }
+    
+    static bool is_sequence(const string &vars, char first_char) {
+        if( vars[0] != first_char )
+            throw std::runtime_error("expr: declare terms which starts with not specified char");
+        auto previous = vars.begin();
+        for( auto it = ++vars.begin(); it != vars.end(); ++it ) {
+            if( *it != static_cast<char>(*previous + 1) )
+                return false;
+            previous = it;
+        }
+        return true;
+    }
 
-    static bool use_undeclared_vars(const vector<string> &terms, const string &vars) {
+    static boost::optional<char> use_undeclared_vars(const vector<string> &terms, const string &vars) {
+        boost::optional<char> ret = boost::none;
         for( auto term : terms )
           for( auto used_var : term )
             if( used_var != inverter && vars.find(used_var, 0) == string::npos )
-              throw std::runtime_error(
-                (boost::format("expr: Using undeclared variable, %c") % used_var).str()
-              );
-        return true;
+              return (ret = used_var);
+        return ret;
     }
 
 private:
     string expr_, func_name_;
+    char first_char_;
 };
 
 
@@ -182,8 +200,8 @@ public:
     typedef Property_ property_type;
     
     logical_term() {}
-    logical_term(int bitsize) 
-        : term_(bitsize, logical_expr::dont_care) {}
+    logical_term(int bitsize, const value_type &init = logical_expr::dont_care) 
+        : term_(bitsize, init) {}
     explicit logical_term(const arg_type &arg) {
         for( int i = arg.size() - 1; 0 <= i; --i )
             term_.push_back(arg[i]);
@@ -262,16 +280,15 @@ private:
 
 // Create a logical_term with Property parsed from expr
 template<typename Property = term_no_property, char Inverter = '^'>
-logical_term<Property> parse_logical_term(const string &expr, int bitsize) {
+logical_term<Property>
+parse_logical_term(const string &expr, int bitsize, char const first_char = 'A') {
     logical_term<Property> term(bitsize);
-    bool invert = false;
-    for( char var : expr ) {
-        if( var == Inverter ) {
-            invert = true;
-            continue;
+    for( auto it = expr.begin(); it != expr.end(); ++it ) {
+        bool value = true;
+        if( *it == Inverter ) {
+            ++it; value = false;
         }
-        term[var - 'A'] = !invert;
-        invert = false;
+        term[*it - first_char] = value;
     }
     return std::move(term);
 }

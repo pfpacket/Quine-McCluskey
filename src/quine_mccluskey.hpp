@@ -36,7 +36,8 @@ using namespace logical_expr;
 //
 class simplifier {
 public:
-    typedef logical_term<term_mark> term_type;
+    typedef term_mark property_type;
+    typedef logical_term<property_type> term_type;
     typedef vector<term_type> set_type;
     typedef vector<set_type> table_type;
 
@@ -68,10 +69,11 @@ public:
         return table_[0];
     }
     
-    void compress_table() {
+    void compress_table(bool printable = false) {
         for( ;; ) {
-            cout << get_current_level() + 1 << "-level compression:" << endl;
-            if( !compress_impl() ) break;
+            if( printable )
+                cout << get_current_level() + 1 << "-level compression:" << endl;
+            if( !compress_impl(printable) ) break;
         }
         for( auto table : table_  )
             for( auto set : table )
@@ -122,7 +124,7 @@ private:
     // Try to find prime implicants
     // Return true while trying to find them
     // Return false if it finished
-    bool compress_impl() {
+    bool compress_impl(bool printable = false) {
         table_type next_table;
         next_table.resize(func_.term_size(), set_type());
         int count = 0;
@@ -132,7 +134,8 @@ private:
                     try {
                         // Throw an exception if could not minimize
                         auto term = onebit_minimize(table_[min_level_][i][j], table_[min_level_][i+1][k], false);
-                        cout << "COMPRESS(" << table_[min_level_][i][j] << ", " << table_[min_level_][i+1][k] << ") = " << term << endl;
+                        if( printable )
+                            cout << "COMPRESS(" << table_[min_level_][i][j] << ", " << table_[min_level_][i+1][k] << ") = " << term << endl;
                         if( std::find_if(next_table[term.num_of_value(true)].begin(), next_table[term.num_of_value(true)].end(), 
                                     [&](const term_type &t){ return t.is_same(term); }) == next_table[term.num_of_value(true)].end())
                             next_table[term.num_of_value(true)].push_back(term);

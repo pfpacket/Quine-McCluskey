@@ -1,9 +1,10 @@
-CFLAGS    = -Wall -O2 -std=c++0x 
-LDFLAGS   =
-INCLUDES  = -I${BOOST_DIR}/include/
-LIBS      = -L${BOOST_DIR}/lib -lboost_regex
-TARGET    = qm
-OBJS      = src/main.o
+BOOST_PATH = ${BOOST_DIR}
+CFLAGS     = -Wall -O2 -std=c++0x -Wno-sign-compare
+LDFLAGS    =
+INCLUDES   = -I${BOOST_PATH}/include/
+LIBS       = -L${BOOST_PATH}/lib -lboost_regex -lboost_program_options
+TARGET     = qm
+OBJS       = src/main.o
 
 all:	$(TARGET)
 rebuild: clean all
