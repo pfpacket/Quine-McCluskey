@@ -13,23 +13,24 @@
         [*] C++11 compiler
         [*] Boost C++ Libraries
             Almost all the libraries used by this are header-only.
-            But you need to build only boost_regex
-            Go to www.boost.org and get the source code to build it
+            But you need to build boost_regex and boost_program_options
+            Go to www.boost.org and get the source code to build them
     [+] Run time
         [*] Nothing is needed. Just run it
 
 [+] Tested environment
     [+] Compiler
-        [*] gcc 4.6.3
+        [*] gcc 4.6.3 / 4.7.1
         [*] clang version 3.2 (trunk 159072)
     [+] Operating System
-        [*] Linux 3.2.0-26-generic-pae i686 GNU/Linux
+        [*] Linux 3.2.0-26-generic-pae i686 GNU/Linux (Ubuntu 12.04)
+        [*] Linux 3.4.6-1-ARCH i686 GNU/Linux (Arch Linux)
     [+] Libraries
         [*] Boost C++ Libraries 1.49.0 / 1.50.0
 
 [+] Supported form(s) of expression
     [*] White spaces are ignored
-    [+] You should enter a expression following the forms below:
+    [+] You should enter a expression following the form below:
         [*] Pseudo BNF
       -------------------------------------------------------------------------------------------
         <supported>  ::= <func-name> (<var-decl>) = <expression>
@@ -41,7 +42,7 @@
 
 [*] Samples
     Input samples exist in sample/in[1-6].txt
-    Also output of each samples are in sample/out[1-6].txt
+    Also the expected output of each samples are in sample/out[1-6].txt
 
 [*] TODO
     Modify the simplifier for more optimization
