@@ -113,7 +113,7 @@ public:
             throw std::runtime_error("expr: Expression is empty, aborted");
         string expr_with_nospaces = boost::regex_replace(expr_, boost::regex("\\s"), "");
         boost::regex reg(
-            (boost::format("([A-Za-z_-]+)\\((((\\s*[A-Z],)*)([A-Z]))\\)=(((%1%?[A-Z])+\\+)*((%1%?[A-Z])+))$") 
+            (boost::format("([A-Za-z_-]+)\\((((\\s*[A-Za-z],)*)([A-Za-z]))\\)=(((%1%?[A-Za-z])+\\+)*((%1%?[A-Za-z])+))$") 
                 % (escape ? string{'\\', inverter} : string{inverter})).str(),
              boost::regex::perl
         );

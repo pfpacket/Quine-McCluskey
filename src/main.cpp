@@ -119,7 +119,7 @@ int main(int argc, char **argv)
         }
         else    qm.compress_table(false);
         for( auto func : qm.simplify() )        // Simplify and print its results
-            print_func_expr(func, first_char, parser.function_name() + "`");
+            print_func_expr(func, first_char, parser.function_name() + "\'");
     }
     catch( std::exception &e ) {
         cerr << endl << "[-] Exception: " << e.what() << endl;
