@@ -12,6 +12,7 @@ using namespace logical_expr;
 
 namespace quine_mccluskey {
 
+
 typedef simplifier::property_type property_type;
 typedef simplifier::term_type term_type;
 typedef simplifier::set_type set_type;
@@ -120,6 +121,7 @@ bool simplifier::compress_impl(bool printable) {
     }
     return (count ? true : false);
 }
+
 
 }   // namespace quine_mccluskey
 

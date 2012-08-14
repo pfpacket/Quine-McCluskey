@@ -39,7 +39,7 @@ public:
 
     simplifier() : min_level_(0) 
         { add_table(table_type()); make_min_table(); }
-    simplifier(const logical_function<term_type> &function) : min_level_(0), func_(function)
+    explicit simplifier(const logical_function<term_type> &function) : min_level_(0), func_(function)
         { add_table(table_type()); make_std_spf(); make_min_table(); }
     ~simplifier() {}
 
@@ -59,9 +59,10 @@ private:
     void clear_table();
     template<typename T>
     static void make_unique(vector<T> &vec);
-    // Try to find prime implicants
-    // Return true while trying to find them
-    // Return false if it finished
+
+    // compress compression table
+    // return true while trying to compress
+    // return false if compression finished
     bool compress_impl(bool printable = false);
 
     int min_level_;

@@ -63,7 +63,7 @@ int main(int argc, char **argv)
         bool print_process = true;
         char first_char = 'A';
         constexpr char inverter = '~';
-        
+
         //
         // Parse command line options
         //
@@ -83,16 +83,16 @@ int main(int argc, char **argv)
             print_process = false;
         if( argmap.count("first-char") )
             first_char = argmap["first-char"].as<char>();
-        
+
         // Input a target logical function to be simplfied
         if( print_process )
             cout << "Logical Function Simplifier (Quine-McCluskey)"   << endl
-                 << "[*] Enter a logical expression to be simplified" << endl
+                 << "[*] Enter a logical function to be simplified" << endl
                  << "    (ex. \"f(A, B, C) = A + BC + ~A~B + ABC\" )" << endl
                  << "[*] Input: " << flush;
         string line;
         getline(cin, line);
-        
+
         // Parse input logical expression and return tokenized
         logical_expr::function_parser<inverter, true> parser(line, first_char);
         auto token = parser.parse();
@@ -109,12 +109,12 @@ int main(int argc, char **argv)
             cout << endl << "Sum of products form:" << endl;
             print_truth_table(qm.get_std_spf(), first_char);    // Print the function in sum of products form
             cout << endl << "Compressing ..." << endl;
-            qm.compress_table(true);                    // Compress the compression table
+            qm.compress_table(true);                            // Compress the compression table
             cout << endl << "Prime implicants: " << endl;
-            for( auto term : qm.get_prime_implicants() ) {
+            for( auto term : qm.get_prime_implicants() ) {      // Print the prime implicants
                 print_term_expr(term, first_char);
                 cout << "  ";
-            }   
+            }
             cout << endl << endl << "Result of simplifying:" << endl;
         }
         else    qm.compress_table(false);

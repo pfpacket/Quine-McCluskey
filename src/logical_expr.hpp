@@ -1,4 +1,3 @@
-
 #ifndef LOGICAL_EXPRESSION_HPP
 #define LOGICAL_EXPRESSION_HPP
 
@@ -17,6 +16,7 @@
 #include <boost/call_traits.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/dynamic_bitset.hpp>
+#include <boost/io/ios_state.hpp>
 
 //
 // namespace for Logical Expression
@@ -27,27 +27,36 @@ namespace logical_expr {
 using namespace std;
 
 // Don't care
-static const boost::optional<bool> dont_care = boost::none;
+/*thread_local*/static const boost::optional<bool> dont_care = boost::none;
 
 // expr_mode is not used now. 
 // But this will be used to change the expression of functions
-enum expr_mode { alphabet_expr };
+enum expr_mode { alphabet_expr, verilog_expr, truth_table };
 
-
+// argument generating iterator for logical_function
+// Exception Safety
 class arg_gen_iterator {
 public:
     typedef boost::dynamic_bitset<> value_type;
     typedef arg_gen_iterator this_type;
     arg_gen_iterator(int width, int val) 
         : width_(width), current_val_(val), value_(width, val) {}
-    this_type& operator++() 
-        { value_ = value_type(width_, ++current_val_); return *this; }
-    this_type  operator++(int) 
-        { this_type it = *this; value_ = value_type(width_, ++current_val_); return it; }
-    this_type& operator--() 
-        { value_ = value_type(width_, --current_val_); return *this; }
-    this_type  operator--(int) 
-        { this_type it = *this; value_ = value_type(width_, --current_val_); return it; }
+    this_type& operator++() {
+        value_type tmp(width_, current_val_ + 1);
+        value_.swap(tmp);   // never throw any exceptions
+        ++current_val_;
+        return *this;
+    }
+    this_type operator++(int)
+        { this_type before = *this; ++*this; return before; }
+    this_type& operator--() {
+        value_type tmp(width_, current_val_ - 1);
+        value_.swap(tmp);
+        --current_val_;
+        return *this;
+    }
+    this_type operator--(int) 
+        { this_type before = *this; --*this; return before; }
     bool operator<(const this_type &it) const
         { return (it.width_ == width_ && current_val_ < it.current_val_); }
     bool operator>(const this_type &it) const
@@ -80,10 +89,10 @@ private:
 // * String to be parsed has to be in the following form:
 // * ${Function-Name}(Variables-divided-by-',' ...) = ${TERMS} + ...
 // * White spaces will be ignored
-// * Default character to invert a variable is '^' (first template parameter)
+// * Default character to invert a variable is '~' (first template parameter)
 // See README for more information about parsing
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-template<char inverter = '^', bool escape = true, expr_mode mode = alphabet_expr>
+template<char inverter = '~', bool escape = true, expr_mode mode = alphabet_expr>
 class function_parser {
 public:
     typedef std::pair<string, vector<string>> result_type;
@@ -191,44 +200,63 @@ typedef term_property_pod<bool, false> term_mark;
 typedef term_property_pod<unsigned int, 0> term_number;
 //
 
+//
+// class: logical term
+//
 template<typename Property_ = term_dummy>
 class logical_term {
 public:
     typedef boost::optional<bool> value_type;    
     typedef boost::dynamic_bitset<> arg_type;
     typedef logical_term<Property_> this_type;
+    typedef std::size_t size_t;
     typedef Property_ property_type;
     
     logical_term() {}
     logical_term(int bitsize, const value_type &init = logical_expr::dont_care) 
         : term_(bitsize, init) {}
+    template<typename Property>
+    explicit logical_term(const logical_term<Property> &term) 
+        { construct_from(term); }
     explicit logical_term(const arg_type &arg) {
         for( int i = arg.size() - 1; 0 <= i; --i )
             term_.push_back(arg[i]);
     }
 
-    template<typename Prop, char Inv>
-    void build_from(const this_type &term) { term_ = term.get_term(); }
-    unsigned int size() const { return term_.size(); }
-    const vector<value_type>& get_term() const { return term_; }
-    vector<value_type>& set_term() const { return term_; }
-
-    bool size_check(const arg_type &arg) const { return (size() == arg.size()); }
+    template<typename Property>
+    void construct_from(const logical_term<Property> &term) 
+        { term_ = term.term_; }
 
     template<typename Property>
-    bool size_check(const logical_term<Property> &term) const { return (size() == term.size()); }
+    void swap(logical_term<Property> &term) {
+        term_.swap(term.term_);
+        std::swap(property_, term.property_);
+    }
 
-    int num_of_value(bool value) const {
-        int value_count = 0;
+    const vector<value_type>& get_term() const
+        { return term_; }
+
+    size_t size() const 
+        { return term_.size(); }
+
+    bool size_check(const arg_type &arg) const 
+        { return (size() == arg.size()); }
+
+    template<typename Property>
+    bool size_check(const logical_term<Property> &term) const 
+        { return ( size() == term.size() ); }
+
+    size_t num_of_value(bool value) const {
+        size_t value_count = 0;
         for( auto b : term_ )
             if( b != dont_care && *b == value )
                 ++value_count;
         return value_count;
     }
 
-    int diff_size(const this_type &term) const {
-        if( !size_check(term) ) return -1;
-        int diff_count = 0;
+    size_t diff_size(const this_type &term) const {
+        if( !size_check(term) ) std::runtime_error(size_error_msg);
+        size_t diff_count = 0;
         for( int i = 0; i < size(); ++i )
             if( term_[i] != term[i] )
                 ++diff_count;
@@ -237,18 +265,18 @@ public:
 
     bool calculate(const arg_type &arg) const {
         if( !size_check(arg) )
-            throw std::runtime_error("target two operands are not same size");
+            throw std::runtime_error(size_error_msg);
         bool ret = true;
         for( int i = 0; i < term_.size(); ++i )
             ret = ret && (term_[i] == dont_care ? true : arg[term_.size()-1-i] == term_[i]);
         return ret;
     }
 
-    bool is_same(const this_type &term) const { return (term.term_ == term_); }
+    bool is_same(const this_type &term) const
+        { return (term.term_ == term_); }
 
-    bool operator()(const arg_type &arg) const {
-        return calculate(arg);
-    }
+    bool operator()(const arg_type &arg) const 
+        { return calculate(arg); }
 
     value_type& operator[](int index) { return term_[index]; }
     const value_type& operator[](int index) const { return term_[index]; }
@@ -271,11 +299,13 @@ public:
     friend void property_set(logical_term<Property>& term,
         const typename logical_term<Property>::property_type::value_type &arg);
 
-
 private:
+    static const string size_error_msg;
     vector<value_type> term_;
     property_type property_;
 };
+template<typename Property>
+const string logical_term<Property>::size_error_msg = "target two operands are not same size";
 
 
 // Create a logical_term with Property parsed from expr
@@ -328,19 +358,23 @@ logical_term<Property> onebit_minimize(const logical_term<Property> &a,
 
 }   // namespace logical_expr
 
+
 template<typename Property>
 std::ostream& operator<<(std::ostream &os, const logical_expr::logical_term<Property> &bf) {
-        for( auto b : bf.get_term() ) {
-            if( b ) os << *b;
-            else    os << 'x';
-        }
-        return os;
+    boost::io::ios_flags_saver ifs(os);
+    for( auto b : bf.get_term() ) {
+        if( b ) os << std::noboolalpha << *b;
+        else    os << 'x';
+    }
+    return os;
 }
 
 
 namespace logical_expr {
 
-
+//
+// class: logical function
+//
 template<typename TermType>
 class logical_function {
 public:
@@ -367,8 +401,10 @@ public:
     }
     void add(const TermType &term) { func_.push_back(term); }
     void add(const this_type &func) {
+        vector<TermType> tmp(func_);
         for( auto term : func )
-            add(term);
+            tmp.push_back(term);
+        std::swap(tmp, func_);
     }
 
     void clear() { func_.clear(); }
@@ -436,7 +472,6 @@ logical_expr::logical_function<logical_expr::logical_term<Property>> operator+
     ret += second;
     return ret;
 }
-
 
  
 #endif  // LOGICAL_EXPRESSION_HPP
