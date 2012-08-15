@@ -179,6 +179,7 @@ private:
 //  [*] typedef value type
 //  [*] Have set() and get() member functions
 //  [*] Default constructible
+//  [*] Has swap() member fuction that never throws any exceptions for expcetion-safe
 //
 
 // Term Property template class for POD types
@@ -189,6 +190,8 @@ public:
     term_property_pod() : value_(DefaultValue) {}
     typename boost::call_traits<T>::param_type get() const { return value_; }
     void set(typename boost::call_traits<T>::param_type value) { value_ = value; }
+    void swap(const term_property_pod<T, DefaultValue> &property) noexcept(true)
+        { std::swap(value_, property.value_); }
 private:
     value_type value_;
 };
@@ -228,19 +231,19 @@ public:
         { term_ = term.term_; }
 
     template<typename Property>
-    void swap(logical_term<Property> &term) {
+    void swap(logical_term<Property> &term) noexcept(true) {
         term_.swap(term.term_);
-        std::swap(property_, term.property_);
+        property_.swap(term.property_);
     }
-
-    const vector<value_type>& get_term() const
-        { return term_; }
 
     size_t size() const 
         { return term_.size(); }
 
     bool size_check(const arg_type &arg) const 
         { return (size() == arg.size()); }
+
+    bool is_same(const this_type &term) const
+        { return (term.term_ == term_); }
 
     template<typename Property>
     bool size_check(const logical_term<Property> &term) const 
@@ -255,7 +258,8 @@ public:
     }
 
     size_t diff_size(const this_type &term) const {
-        if( !size_check(term) ) std::runtime_error(size_error_msg);
+        if( !size_check(term) )
+            throw std::runtime_error(size_error_msg);
         size_t diff_count = 0;
         for( int i = 0; i < size(); ++i )
             if( term_[i] != term[i] )
@@ -272,14 +276,13 @@ public:
         return ret;
     }
 
-    bool is_same(const this_type &term) const
-        { return (term.term_ == term_); }
-
     bool operator()(const arg_type &arg) const 
         { return calculate(arg); }
 
-    value_type& operator[](int index) { return term_[index]; }
-    const value_type& operator[](int index) const { return term_[index]; }
+    value_type& operator[](int index)
+        { return term_[index]; }
+    const value_type& operator[](int index) const
+        { return term_[index]; }
     
     template<typename Property>
     bool operator==(const logical_term<Property> &term) const {
@@ -299,8 +302,18 @@ public:
     friend void property_set(logical_term<Property>& term,
         const typename logical_term<Property>::property_type::value_type &arg);
 
+    template<typename Property>
+    friend std::ostream& operator<<(std::ostream &os, const logical_expr::logical_term<Property> &bf) {
+        boost::io::ios_flags_saver ifs(os);
+        for( auto b : bf.term_ ) {
+            if( b ) os << std::noboolalpha << *b;
+            else    os << 'x';
+        }
+        return os;
+    }
+
 private:
-    static const string size_error_msg;
+    static const std::string size_error_msg;
     vector<value_type> term_;
     property_type property_;
 };
@@ -323,7 +336,9 @@ parse_logical_term(const string &expr, int bitsize, char const first_char = 'A')
     return std::move(term);
 }
 
-
+//
+// Setter and getter functions of term property
+//
 template<typename Property>
 typename logical_term<Property>::property_type::value_type
     property_get(const logical_term<Property>& term) 
@@ -334,11 +349,15 @@ void property_set(logical_term<Property>& term,
     const typename logical_term<Property>::property_type::value_type &arg)
 { term.property_.set(arg); }
 
+
+//
+// Minimize the different 1bit of term a and b 
+//
 template<typename Property>
 logical_term<Property> onebit_minimize(const logical_term<Property> &a, const logical_term<Property> &b)
 {
     if( a.size() != b.size() || 1 < a.diff_size(b) )
-        throw std::runtime_error("tried to minimize two different size terms");
+        throw std::runtime_error("tried to minimize a term which has more than 1bit different bits");
     logical_term<Property> term(a);
     for( int i = 0; i < term.size(); ++i )
         if( term[i] != b[i] )
@@ -346,31 +365,19 @@ logical_term<Property> onebit_minimize(const logical_term<Property> &a, const lo
     return std::move(term);
 }
 
+// Return minimized term which has pval as its property value
 template<typename Property>
-logical_term<Property> onebit_minimize(const logical_term<Property> &a, 
-        const logical_term<Property> &b, const typename logical_term<Property>::property_type::value_type &pval)
+logical_term<Property> onebit_minimize(
+        const logical_term<Property> &a, 
+        const logical_term<Property> &b, 
+        const typename logical_term<Property>::property_type::value_type &pval
+    )
 {
     logical_term<Property> term = onebit_minimize(a, b);
     property_set(term, pval);
     return std::move(term);
 }
 
-
-}   // namespace logical_expr
-
-
-template<typename Property>
-std::ostream& operator<<(std::ostream &os, const logical_expr::logical_term<Property> &bf) {
-    boost::io::ios_flags_saver ifs(os);
-    for( auto b : bf.get_term() ) {
-        if( b ) os << std::noboolalpha << *b;
-        else    os << 'x';
-    }
-    return os;
-}
-
-
-namespace logical_expr {
 
 //
 // class: logical function
@@ -389,17 +396,22 @@ public:
     explicit logical_function(const TermType &term) { add(term); }
     ~logical_function() {}
 
-    iterator begin() { return func_.begin(); }
+    iterator begin()             { return func_.begin(); }
     const_iterator begin() const { return func_.begin(); }
-    iterator end() { return func_.end(); }
-    const_iterator end() const { return func_.end(); }
+    iterator end()               { return func_.end(); }
+    const_iterator end()   const { return func_.end(); }
 
-    int size() const { return func_.size(); }
+    void swap(logical_function<TermType> &func)
+        { func_.swap(func); }
+
+    int size() const
+        { return func_.size(); }
     int term_size() const {
         if( size() == 0 ) return 0;
         return func_[0].size();
     }
-    void add(const TermType &term) { func_.push_back(term); }
+    void add(const TermType &term)
+        { func_.push_back(term); }
     void add(const this_type &func) {
         vector<TermType> tmp(func_);
         for( auto term : func )
@@ -407,7 +419,8 @@ public:
         std::swap(tmp, func_);
     }
 
-    void clear() { func_.clear(); }
+    void clear()
+        { func_.clear(); }
     
     bool calculate(const arg_type &arg) const {
         bool ret = false;
@@ -426,22 +439,29 @@ public:
         return true;
     }
 
-    bool operator()(const arg_type &arg) const { return calculate(arg); }
-    value_type& operator[](int index) { return func_[index]; }
-    const value_type&  operator[](int index) const { return func_[index]; }
+    bool operator()(const arg_type &arg) const
+        { return calculate(arg); }
+    value_type& operator[](int index)
+        { return func_[index]; }
+    const value_type&  operator[](int index) const
+        { return func_[index]; }
     
     logical_function operator+(const TermType &term) {
         logical_function ret(*this);
         ret += term;
         return ret;
     }
+
     logical_function  operator+(const logical_function<TermType> &func) {
         logical_function ret(*this);
         ret += func;
         return ret;
     }
-    logical_function& operator+=(const TermType &term) { add(term); return *this; }
-    logical_function& operator+=(const logical_function &func) { add(func); return *this; }
+    
+    logical_function& operator+=(const TermType &term)
+        { add(term); return *this; }
+    logical_function& operator+=(const logical_function &func)
+        { add(func); return *this; }
     friend ostream& operator<<(ostream &os, const logical_function &bf) {
         for( auto term : bf.func_ )
             os << term << " ";
