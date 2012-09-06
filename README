@@ -7,6 +7,13 @@
     An implementation of Quine-McCluskey algorithm
     Simplification of logical expressions
 
+[*] Build
+    Just run make command
+    $ make
+    ./qm, the executable will be created
+    if you need to specify a compiler
+    $ make CXX="COMPILER YOU WANT TO USE"
+
 [+] Requirements
     [+] Compile Time
         [*] Make
@@ -14,24 +21,24 @@
         [*] Boost C++ Libraries
             Almost all the libraries used by this are header-only.
             But you need to build boost_regex and boost_program_options
-            Go to www.boost.org and get the source code to build them
+            Go to www.boost.org and get the source code to build it
     [+] Run time
         [*] Nothing is needed. Just run it
 
-[+] Tested environment
+[+] Tested environments
     [+] Compiler
         [*] gcc 4.6.3 / 4.7.1
-        [*] clang version 3.2 (trunk 159072)
+        [*] clang version 3.1 / 3.2 (trunk 159072)
     [+] Operating System
-        [*] Linux 3.2.0-26-generic-pae i686 GNU/Linux (Ubuntu 12.04)
         [*] Linux 3.4.6-1-ARCH i686 GNU/Linux (Arch Linux)
+        [*] Linux 3.2.0-26-generic-pae i686 GNU/Linux (Ubuntu 12.04)
     [+] Libraries
-        [*] Boost C++ Libraries 1.49.0 / 1.50.0
+        [*] Boost C++ Libraries 1.49.0 / 1.50.0 / 1.51.0
 
 [+] Supported form(s) of expression
     [*] White spaces are ignored
-    [+] You should enter a expression following the form below:
-        [*] Pseudo BNF
+    [+] Supported form is below:
+        [*] In pseudo BNF
       -------------------------------------------------------------------------------------------
         <supported>  ::= <func-name> (<var-decl>) = <expression>
         <func-name>  ::= [A-Za-z_-]+

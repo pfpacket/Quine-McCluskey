@@ -1,5 +1,5 @@
 Logical Function Simplifier (Quine-McCluskey)
-[*] Enter a logical expression to be simplified
+[*] Enter a logical function to be simplified
     (ex. "f(A, B, C) = A + BC + ~A~B + ABC" )
 [*] Input: 
 Sum of products form:
@@ -62,5 +62,5 @@ Prime implicants:
 ~AD  ~BD  ~AB  B~D  A~B  A~D  
 
 Result of simplifying:
-f = ~AD + B~D + A~B
-f = ~BD + ~AB + A~D
+f' = ~AD + B~D + A~B
+f' = ~BD + ~AB + A~D

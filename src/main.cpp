@@ -10,7 +10,6 @@
 #include "quine_mccluskey.hpp"
 
 using namespace std;
-using namespace boost::program_options;
 
 template<typename Property>
 void print_term_expr(const logical_expr::logical_term<Property> &term, 
@@ -67,6 +66,7 @@ int main(int argc, char **argv)
         //
         // Parse command line options
         //
+        using namespace boost::program_options;
         options_description opt("Options");
         opt.add_options()
             ("quiet,q", "never print the information of the process of simplifying")
@@ -84,10 +84,10 @@ int main(int argc, char **argv)
         if( argmap.count("first-char") )
             first_char = argmap["first-char"].as<char>();
 
-        // Input a target logical function to be simplfied
+        // Input a target logical function to be simplfied from stdin
         if( print_process )
             cout << "Logical Function Simplifier (Quine-McCluskey)"   << endl
-                 << "[*] Enter a logical function to be simplified" << endl
+                 << "[*] Enter a logical function to be simplified"   << endl
                  << "    (ex. \"f(A, B, C) = A + BC + ~A~B + ABC\" )" << endl
                  << "[*] Input: " << flush;
         string line;
@@ -111,14 +111,16 @@ int main(int argc, char **argv)
             cout << endl << "Compressing ..." << endl;
             qm.compress_table(true);                            // Compress the compression table
             cout << endl << "Prime implicants: " << endl;
-            for( auto term : qm.get_prime_implicants() ) {      // Print the prime implicants
+            for( const auto &term : qm.get_prime_implicants() ) {      // Print the prime implicants
                 print_term_expr(term, first_char);
                 cout << "  ";
             }
             cout << endl << endl << "Result of simplifying:" << endl;
         }
-        else    qm.compress_table(false);
-        for( auto func : qm.simplify() )        // Simplify and print its results
+        else
+            qm.compress_table(false);
+
+        for( const auto &func : qm.simplify() )        // Simplify and print its results
             print_func_expr(func, first_char, parser.function_name() + "\'");
     }
     catch( std::exception &e ) {

@@ -1,10 +1,10 @@
 Logical Function Simplifier (Quine-McCluskey)
-[*] Enter a logical expression to be simplified
+[*] Enter a logical function to be simplified
     (ex. "f(A, B, C) = A + BC + ~A~B + ABC" )
 [*] Input: 
 Sum of products form:
-Truth Table: f = ~A~B~CD + ~A~BC~D + ~AB~CD + ~ABC~D + ~ABCD + A~B~C~D + A~B~CD + AB~C~D + AB~CD
-ABCD | f()
+Truth Table: f = ~W~X~YZ + ~W~XY~Z + ~WX~YZ + ~WXY~Z + ~WXYZ + W~X~Y~Z + W~X~YZ + WX~Y~Z + WX~YZ
+WXYZ | f()
 -----|----
 0000 |  0
 0001 |  1
@@ -43,8 +43,8 @@ COMPRESS(1x00, 1x01) = 1x0x
 3-level compression:
 
 Prime implicants: 
-~AC~D  ~ABD  ~ABC  ~CD  A~C  
+~WY~Z  ~WXZ  ~WXY  ~YZ  W~Y  
 
 Result of simplifying:
-f = ~AC~D + ~ABD + ~CD + A~C
-f = ~AC~D + ~ABC + ~CD + A~C
+function' = ~WY~Z + ~WXZ + ~YZ + W~Y
+function' = ~WY~Z + ~WXY + ~YZ + W~Y

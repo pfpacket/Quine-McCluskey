@@ -250,11 +250,8 @@ public:
         { return ( size() == term.size() ); }
 
     size_t num_of_value(bool value) const {
-        size_t value_count = 0;
-        for( auto b : term_ )
-            if( b != dont_care && *b == value )
-                ++value_count;
-        return value_count;
+        return static_cast<size_t>(std::count_if(term_.begin(), term_.end(), 
+                [value](const value_type &b){ return (b != dont_care && *b == value); }));
     }
 
     size_t diff_size(const this_type &term) const {
@@ -333,7 +330,7 @@ parse_logical_term(const string &expr, int bitsize, char const first_char = 'A')
         }
         term[*it - first_char] = value;
     }
-    return std::move(term);
+    return term;
 }
 
 //
@@ -385,11 +382,11 @@ logical_term<Property> onebit_minimize(
 template<typename TermType>
 class logical_function {
 public:
+    typedef std::size_t size_t;
     typedef TermType value_type;
     typedef boost::dynamic_bitset<> arg_type;
     typedef typename vector<value_type>::iterator iterator;
     typedef typename vector<value_type>::const_iterator const_iterator;
-    typedef int id_type;
     typedef logical_function<TermType> this_type;
 
     logical_function() {}
@@ -401,22 +398,23 @@ public:
     iterator end()               { return func_.end(); }
     const_iterator end()   const { return func_.end(); }
 
-    void swap(logical_function<TermType> &func)
-        { func_.swap(func); }
+    void swap(logical_function<TermType> &func) noexcept(true)
+        { func_.swap(func.func_); }
 
     int size() const
         { return func_.size(); }
-    int term_size() const {
-        if( size() == 0 ) return 0;
+    size_t term_size() const {
+        if( func_.empty() ) return 0;
         return func_[0].size();
     }
     void add(const TermType &term)
         { func_.push_back(term); }
+
     void add(const this_type &func) {
         vector<TermType> tmp(func_);
         for( auto term : func )
             tmp.push_back(term);
-        std::swap(tmp, func_);
+        func_ = std::move(tmp);
     }
 
     void clear()
@@ -430,12 +428,13 @@ public:
     }
 
     bool is_same(const this_type &func) const {
-        for( int i = 0; i < size(); ++i ) {
-            bool find_same = false;
-            for( int j = 0; j < size(); ++j )
-                find_same |= (*this)[i].is_same(func[j]);
-            if( !find_same ) return false;
-        }
+        if( term_size() != func.term_size() )
+            return false;
+        for( const value_type &term : func_ )
+            if( std::find_if(func.begin(), func.end(),
+                [&](const value_type &t){ return t.is_same(term); })
+                    == func.end() )
+                return false;
         return true;
     }
 
@@ -443,16 +442,17 @@ public:
         { return calculate(arg); }
     value_type& operator[](int index)
         { return func_[index]; }
-    const value_type&  operator[](int index) const
+    const value_type& operator[](int index) const
         { return func_[index]; }
     
-    logical_function operator+(const TermType &term) {
+    // The expression like "term + term = func" is not allowed
+    const logical_function operator+(const TermType &term) {
         logical_function ret(*this);
         ret += term;
         return ret;
     }
 
-    logical_function  operator+(const logical_function<TermType> &func) {
+    const logical_function operator+(const logical_function<TermType> &func) {
         logical_function ret(*this);
         ret += func;
         return ret;
@@ -493,5 +493,5 @@ logical_expr::logical_function<logical_expr::logical_term<Property>> operator+
     return ret;
 }
 
- 
+
 #endif  // LOGICAL_EXPRESSION_HPP

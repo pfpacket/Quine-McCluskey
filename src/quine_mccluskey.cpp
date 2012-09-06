@@ -50,20 +50,22 @@ void simplifier::compress_table(bool printable) {
 }
 
 const vector<logical_function<term_type>>& simplifier::simplify() {
-    vector<int> next_index;
+    vector<int> next_index(prime_imp.size());
+    std::iota(next_index.begin(), next_index.end(), 0);
+    // bool: wether simplifying finished  int: loop number that simplifying took
     std::pair<bool, int> end_flags = { false, 0 };
-    for( int i = 0; i < prime_imp.size(); ++i )
-        next_index.push_back(i);
     for( int i = 1; i <= prime_imp.size(); ++i ) {
         if( end_flags.first && end_flags.second < i )
             break;
         do {
             logical_function<term_type> func;
+            auto log_func_comp 
+                = [&](const logical_function<term_type> &f){ return f.is_same(func); };
             for( int j = 0; j < i; ++j )
                 func += prime_imp[next_index[j]];
-            if( func == stdspf_ 
-                && std::find_if(simplified_.begin(), simplified_.end(), 
-                    [&](const logical_function<term_type> &f){ return f.is_same(func); }) == simplified_.end() ) {
+            if( func == stdspf_ &&
+                std::find_if(simplified_.begin(), simplified_.end(), log_func_comp)
+                   == simplified_.end() ) {
                 simplified_.push_back(func);
                 end_flags = { true, i };
             }
