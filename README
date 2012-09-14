@@ -23,7 +23,7 @@
             But you need to build boost_regex and boost_program_options
             Go to www.boost.org and get the source code to build it
     [+] Run time
-        [*] Nothing is needed. Just run it
+        [*] Nothing. Just run it
 
 [+] Tested environments
     [+] Compiler
@@ -40,7 +40,7 @@
     [+] Supported form is below:
         [*] In pseudo BNF
       -------------------------------------------------------------------------------------------
-        <supported>  ::= <func-name> (<var-decl>) = <expression>
+        <function>   ::= <func-name> '('<var-decl>')' '=' <expression>
         <func-name>  ::= [A-Za-z_-]+
         <var-decl>   ::= ([A-Z],)+ [A-Z]
         <expression> ::= <expression> + <expression> | <expression> + <term> | <term> + <term>

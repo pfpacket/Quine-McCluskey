@@ -17,6 +17,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/io/ios_state.hpp>
+#include <boost/optional.hpp>
+//#include <boost/logic/tribool.hpp>
 
 //
 // namespace for Logical Expression
@@ -28,13 +30,12 @@ using namespace std;
 
 // Don't care
 /*thread_local*/static const boost::optional<bool> dont_care = boost::none;
+// static const boost::logic::tribool dont_care = indeterminated; better than optional<bool>
 
 // expr_mode is not used now. 
-// But this will be used to change the expression of functions
 enum expr_mode { alphabet_expr, verilog_expr, truth_table };
 
 // argument generating iterator for logical_function
-// Exception Safety
 class arg_gen_iterator {
 public:
     typedef boost::dynamic_bitset<> value_type;
@@ -158,12 +159,11 @@ public:
     }
 
     static boost::optional<char> use_undeclared_vars(const vector<string> &terms, const string &vars) {
-        boost::optional<char> ret = boost::none;
         for( auto term : terms )
           for( auto used_var : term )
             if( used_var != inverter && vars.find(used_var, 0) == string::npos )
-              return (ret = used_var);
-        return ret;
+              return (used_var);
+        return boost::none;
     }
 
 private:
@@ -428,7 +428,7 @@ public:
     }
 
     bool is_same(const this_type &func) const {
-        if( term_size() != func.term_size() )
+        if( size() != func.size() )
             return false;
         for( const value_type &term : func_ )
             if( std::find_if(func.begin(), func.end(),
