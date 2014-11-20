@@ -51,7 +51,9 @@
     Input samples exist in sample/in[1-6].txt
     Also the expected output of each samples are in sample/out[1-6].txt
 
+[*] License:
+    The content of this repository is licensed under The BSD 2-Clause License
+
 [*] TODO
     Modify the simplifier for more optimization
     Support Verilog source code
-
