@@ -1,11 +1,11 @@
 CXX        = g++
 CFLAGS     = -Wall -O2 -std=c++0x -Wno-sign-compare
 LDFLAGS    =
-INCLUDES   = -I${BOOST_PATH}/include/
-LIBS       = -L${BOOST_PATH}/lib -lboost_regex -lboost_program_options
+BOOST_PATH = /usr
+INCLUDES   = -I $(BOOST_PATH)/include/
+LIBS       = -L $(BOOST_PATH)/lib -lboost_regex -lboost_program_options
 TARGET     = qm
 OBJS       = src/main.o src/quine_mccluskey.o
-BOOST_PATH = ${BOOST_DIR}
 
 all:     $(TARGET)
 rebuild: clean all
