@@ -1,5 +1,5 @@
 CXX        = g++
-CFLAGS     = -Wall -O2 -std=c++0x -Wno-sign-compare
+CFLAGS     = -Wall -Wextra -O2 -std=c++0x -Wno-sign-compare
 LDFLAGS    =
 BOOST_PATH = /usr
 INCLUDES   = -I $(BOOST_PATH)/include/

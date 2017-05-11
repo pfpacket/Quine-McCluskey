@@ -3,6 +3,7 @@
 #include <set>
 #include <algorithm>
 #include <stdexcept>
+#include <numeric>
 #include <cmath>
 #include "logical_expr.hpp"
 #include "quine_mccluskey.hpp"

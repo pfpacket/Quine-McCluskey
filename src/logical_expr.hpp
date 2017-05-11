@@ -56,7 +56,7 @@ public:
         --current_val_;
         return *this;
     }
-    this_type operator--(int) 
+    this_type operator--(int)
         { this_type before = *this; --*this; return before; }
     bool operator<(const this_type &it) const
         { return (it.width_ == width_ && current_val_ < it.current_val_); }
@@ -136,7 +136,7 @@ public:
     }
 
     static result_type tokenizer(const vector<string> &untokenized) {
-        std::vector<string> vars, terms;
+        std::vector<string> terms;
         typedef boost::char_separator<char> char_separator;
         boost::tokenizer<char_separator> 
             var_tokenizer(untokenized[0], char_separator(",")), term_tokenizer(untokenized[1], char_separator("+"));
