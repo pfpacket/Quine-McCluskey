@@ -14,7 +14,6 @@
 #include <boost/format.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/call_traits.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/io/ios_state.hpp>
 #include <boost/optional.hpp>
