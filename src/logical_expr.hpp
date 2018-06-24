@@ -9,12 +9,11 @@
 #include <iterator>
 #include <algorithm>
 #include <stdexcept>
+#include <regex>
 #include <cmath>
-#include <boost/regex.hpp>
 #include <boost/format.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/call_traits.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/io/ios_state.hpp>
 #include <boost/optional.hpp>
@@ -121,14 +120,13 @@ public:
     vector<string> scanner() {
         if( expr_.empty() )
             throw std::runtime_error("expr: Expression is empty, aborted");
-        string expr_with_nospaces = boost::regex_replace(expr_, boost::regex("\\s"), "");
-        boost::regex reg(
+        string expr_with_nospaces = std::regex_replace(expr_, std::regex("\\s"), "");
+        std::regex reg(
             (boost::format("([A-Za-z_-]+)\\((((\\s*[A-Za-z],)*)([A-Za-z]))\\)=(((%1%?[A-Za-z])+\\+)*((%1%?[A-Za-z])+))$") 
-                % (escape ? string{'\\', inverter} : string{inverter})).str(),
-             boost::regex::perl
+                % (escape ? string{'\\', inverter} : string{inverter})).str()
         );
-        boost::smatch result;
-        if( !boost::regex_match(expr_with_nospaces, result, reg) )
+        std::smatch result;
+        if( !std::regex_match(expr_with_nospaces, result, reg) )
             throw std::runtime_error("expr: Input string does not match the correct form");
         func_name_ = result[1];
 //                            decl-vars  decl-terms

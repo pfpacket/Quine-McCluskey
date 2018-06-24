@@ -3,7 +3,7 @@ CFLAGS     = -Wall -Wextra -O2 -std=c++0x -Wno-sign-compare
 LDFLAGS    =
 BOOST_PATH = /usr
 INCLUDES   = -I $(BOOST_PATH)/include/
-LIBS       = -L $(BOOST_PATH)/lib -lboost_regex -lboost_program_options
+LIBS       = -L $(BOOST_PATH)/lib -lboost_program_options
 TARGET     = qm
 OBJS       = src/main.o src/quine_mccluskey.o
 
